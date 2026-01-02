@@ -1,0 +1,114 @@
+@import "tailwindcss";
+
+[x-cloak] {
+  display: none !important;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: var(--font-inter), sans-serif;
+    background-color: #fdfbf8;
+    color: #041a45;
+  }
+
+  button {
+    font-family: var(--font-inter), sans-serif;
+  }
+
+  /* Gradient backgrounds */
+  .bg-gradient-beige {
+    background: linear-gradient(135deg, #fdfbf8 0%, #edcea4 100%);
+  }
+
+  .bg-gradient-blue {
+    background: linear-gradient(135deg, #041a45 0%, #3f5071 100%);
+  }
+
+  .bg-gradient-soft {
+    background: linear-gradient(180deg, #fdfbf8 0%, #f5f0ea 100%);
+  }
+
+  /* Texture overlay */
+  .texture-overlay {
+    position: relative;
+  }
+
+  .texture-overlay::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23edcea4' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v6h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    opacity: 0.4;
+    pointer-events: none;
+  }
+}
+
+@layer components {
+  .container {
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    max-width: 1440px;
+  }
+
+  .btn-primary {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    border: 1px solid rgba(4, 26, 69, 0.3);
+    font-size: 0.75rem;
+    font-family: var(--font-inter), sans-serif;
+    font-weight: 400;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: #041a45;
+    transition: all 0.3s;
+  }
+
+  .btn-primary:hover {
+    background-color: #041a45;
+    color: white;
+  }
+
+  .btn-secondary {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    background-color: #041a45;
+    color: white;
+    font-size: 0.75rem;
+    font-family: var(--font-inter), sans-serif;
+    font-weight: 400;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    transition: all 0.3s;
+  }
+
+  .btn-secondary:hover {
+    background-color: #3f5071;
+  }
+}
+
+.swiper-slide-thumb-active img {
+  border: 2px solid #041a45;
+  padding: 0.125rem;
+}
+
+.animate-move-left {
+  animation: move-left 50s linear infinite;
+}
+
+@keyframes move-left {
+  0% {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
