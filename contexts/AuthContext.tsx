@@ -20,50 +20,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const store = useAuthStore();
     const [mounted, setMounted] = useState(false);
     const [hasInitialized, setHasInitialized] = useState(false);
-
-    const loadUserProfile = async (userId: string) => {
-        try {
-            console.log('[AuthContext] Loading profile for user:', userId);
-            
-            // Check if profile is cached in Zustand store first
-            if (store.profile?.id === userId) {
-                console.log('[AuthContext] Profile already in store, skipping fetch');
-                return;
-            }
-            
-            // Check if profile is cached in localStorage
-            const cachedProfile = localStorage.getItem(`user_profile_${userId}`);
-            if (cachedProfile) {
-                const profileData = JSON.parse(cachedProfile);
-                store.setProfile(profileData);
-                console.log('[AuthContext] Profile loaded from cache:', { id: profileData.id, role: profileData.role });
-                return;
-            }
-            
-            // Only fetch from API if explicitly needed (manual call)
-            // Auto-loading is prevented to respect user preference
-            console.log('[AuthContext] Profile not cached, waiting for manual trigger');
-        } catch (err) {
-            console.error('[AuthContext] Exception loading profile:', err);
-            store.setProfile(null);
+    const fetchInProgress = React.useRef<string | null>(null);
+    const lastFetchedId = React.useRef<string | null>(null);
+    
+    const fetchProfileManually = async (userId: string, force: boolean = false) => {
+        // Prevent concurrent fetches for the same user
+        if (fetchInProgress.current === userId) {
+            console.log('[AuthContext] Fetch already in progress for user:', userId);
+            return;
         }
-    };
-
-    const fetchProfileManually = async (userId: string) => {
+    
+        // Skip if we already fetched this user successfully and not forcing
+        if (!force && lastFetchedId.current === userId && store.profile?.id === userId) {
+            console.log('[AuthContext] Profile already fetched for user:', userId);
+            return;
+        }
+    
         try {
-            console.log('[AuthContext] Manually fetching profile for user:', userId);
+            fetchInProgress.current = userId;
+            console.log('[AuthContext] Fetching profile for user:', userId);
             
-            // Call API endpoint to fetch user profile
-            const response = await fetch(`/api/users/${userId}`);
-            console.log('[AuthContext] Profile API response status:', response.status);
+            const { data: profileData, error } = await supabase
+                .from('user_profiles')
+                .select('*')
+                .eq('id', userId)
+                .maybeSingle();
             
-            if (!response.ok) {
-                console.warn('[AuthContext] Profile API returned status:', response.status);
+            if (error) {
+                console.error('[AuthContext] Error fetching profile:', error);
                 store.setProfile(null);
                 return;
             }
-            
-            const profileData = await response.json();
             
             if (!profileData) {
                 console.warn('[AuthContext] No profile data returned for user:', userId);
@@ -74,38 +61,51 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             // Cache profile in localStorage
             localStorage.setItem(`user_profile_${userId}`, JSON.stringify(profileData));
             store.setProfile(profileData);
-            console.log('[AuthContext] Profile fetched manually and cached:', { id: profileData.id, role: profileData.role });
+            lastFetchedId.current = userId;
+            console.log('[AuthContext] Profile fetched and cached:', { id: profileData.id, role: profileData.role });
         } catch (err) {
             console.error('[AuthContext] Exception fetching profile:', err);
             store.setProfile(null);
+        } finally {
+            fetchInProgress.current = null;
         }
     };
 
-    // Initialize auth state on mount - ONLY check session, don't fetch profile
+    // Initialize auth state on mount
     useEffect(() => {
         setMounted(true);
 
-        // One-time initialization
         if (hasInitialized) return;
         
         const initializeAuth = async () => {
             try {
                 store.setIsLoading(true);
-                const { data: { user: currentUser } } = await supabase.auth.getUser();
-                store.setUser(currentUser);
-                
-                // Load profile from cache if available
-                if (currentUser?.id) {
-                    const cachedProfile = localStorage.getItem(`user_profile_${currentUser.id}`);
-                    if (cachedProfile) {
-                        const profileData = JSON.parse(cachedProfile);
-                        store.setProfile(profileData);
-                    }
-                }
+                // Use getSession instead of getUser for initial check to avoid triggering redundant refreshes
+                // getUser is more secure but getSession is faster and less prone to race conditions on mount
+        const { data: { session } } = await supabase.auth.getSession();
+        const currentUser = session?.user ?? null;
+        store.setUser(currentUser);
+        
+        if (currentUser?.id) {
+            const cachedProfile = localStorage.getItem(`user_profile_${currentUser.id}`);
+            if (cachedProfile) {
+                const profileData = JSON.parse(cachedProfile);
+                store.setProfile(profileData);
+                lastFetchedId.current = currentUser.id;
+            } else {
+                // Auto-fetch if not in cache
+                await fetchProfileManually(currentUser.id);
+            }
+        }
                 
                 setHasInitialized(true);
-            } catch (err) {
-                console.error('[AuthContext] Error during initialization:', err);
+            } catch (err: any) {
+                // Silently handle "Already Used" error as it's often a race condition
+                if (err?.message?.includes('Already Used')) {
+                    console.warn('[AuthContext] Refresh token already used, ignoring conflict');
+                } else {
+                    console.error('[AuthContext] Error during initialization:', err);
+                }
                 setHasInitialized(true);
             } finally {
                 store.setIsLoading(false);
@@ -123,18 +123,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 store.setUser(currentUser);
 
                 if (event === 'SIGNED_OUT') {
-                    // Clear everything on sign out
                     if (currentUser?.id) {
                         localStorage.removeItem(`user_profile_${currentUser.id}`);
                     }
+                    lastFetchedId.current = null;
                     store.clearAuth();
-                } else if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
-                    // Only load from cache on sign in, don't fetch from API
+                } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
                     if (currentUser?.id) {
+                        // For USER_UPDATED or TOKEN_REFRESHED, we might want to force fetch
+                        const shouldForce = event === 'USER_UPDATED';
+                        
                         const cachedProfile = localStorage.getItem(`user_profile_${currentUser.id}`);
-                        if (cachedProfile) {
+                        if (cachedProfile && !shouldForce) {
                             const profileData = JSON.parse(cachedProfile);
                             store.setProfile(profileData);
+                            lastFetchedId.current = currentUser.id;
+                        } else {
+                            await fetchProfileManually(currentUser.id, shouldForce);
                         }
                     }
                 }
@@ -162,7 +167,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             store.setUser(currentUser);
 
             if (currentUser?.id) {
-                await fetchProfileManually(currentUser.id);
+                // When explicitly refreshing, we force fetch
+                await fetchProfileManually(currentUser.id, true);
             }
         } catch (err) {
             console.error('[AuthContext] Error refreshing auth:', err);
@@ -171,17 +177,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
     };
 
-    if (!mounted) {
-        return <>{children}</>;
-    }
-
     return (
         <AuthContext.Provider
             value={{
-                user: store.user,
-                profile: store.profile,
-                isLoading: store.isLoading,
-                isAdmin: store.isAdmin,
+                user: mounted ? store.user : null,
+                profile: mounted ? store.profile : null,
+                isLoading: mounted ? store.isLoading : true,
+                isAdmin: mounted ? store.isAdmin : false,
                 signOut,
                 refreshAuth,
             }}

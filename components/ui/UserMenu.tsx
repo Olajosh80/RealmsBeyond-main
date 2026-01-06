@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { FiUser, FiLogOut, FiPackage, FiSettings } from 'react-icons/fi';
 import { supabase } from '@/lib/supabase';
-import { UserProfile } from '@/lib/supabase';
+import { UserProfile } from '@/lib/stores/authStore';
 
 interface UserMenuProps {
   user: any;
@@ -71,8 +71,9 @@ export const UserMenu: React.FC<UserMenuProps> = ({
   };
 
   const getUserInitials = () => {
-    if (profile?.full_name) {
-      const names = profile.full_name.trim().split(' ');
+    const fullName = profile?.full_name || user?.user_metadata?.full_name;
+    if (fullName) {
+      const names = fullName.trim().split(' ');
       if (names.length >= 2) {
         return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
       }
@@ -85,7 +86,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({
   };
 
   const getUserDisplayName = () => {
-    return profile?.full_name || user?.email || 'User';
+    return profile?.full_name || user?.user_metadata?.full_name || user?.email || 'User';
   };
 
   if (!isOpen) return null;

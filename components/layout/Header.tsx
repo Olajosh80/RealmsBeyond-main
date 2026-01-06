@@ -4,9 +4,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { FiMenu, FiX, FiSearch, FiShoppingCart, FiUser } from 'react-icons/fi';
 import { useCart } from '@/contexts/CartContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { UserMenu } from '@/components/ui/UserMenu';
-import { supabase } from '@/lib/supabase';
-import { UserProfile } from '@/lib/supabase';
+import { UserProfile } from '@/lib/stores/authStore';
 
 const navigation = [
   { name: 'Home', href: '/' },
@@ -20,8 +20,7 @@ const navigation = [
 export const Header: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [user, setUser] = useState<any>(null);
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const { user, profile: userProfile } = useAuth();
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const profileButtonRef = useRef<HTMLButtonElement>(null);
   const { getTotalItems } = useCart();
@@ -33,57 +32,6 @@ export const Header: React.FC = () => {
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  // Fetch user profile
-  const fetchUserProfile = async (userId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('user_profiles')
-        .select('*')
-        .eq('id', userId)
-        .maybeSingle();
-
-      if (error) {
-        // Only log non-permission errors (RLS might prevent access)
-        if (error.code !== 'PGRST301' && error.code !== '42501') {
-          console.error('Error fetching user profile:', error);
-        }
-        setUserProfile(null);
-        return;
-      }
-
-      // Set profile data if exists, otherwise null (profile should be created during signup)
-      setUserProfile(data || null);
-    } catch (error: any) {
-      // Silently handle errors - profile might not exist yet or RLS might prevent access
-      setUserProfile(null);
-    }
-  };
-
-  // Auth state management
-  useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchUserProfile(session.user.id);
-      }
-    });
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        setUser(session?.user ?? null);
-        if (session?.user) {
-          await fetchUserProfile(session.user.id);
-        } else {
-          setUserProfile(null);
-        }
-      }
-    );
-
-    return () => subscription.unsubscribe();
   }, []);
 
   return (
@@ -132,8 +80,11 @@ export const Header: React.FC = () => {
               <img
                 src="/logo.png"
                 alt="Beyond Realms Logo"
-                className={`h-10 w-auto transition-transform duration-300 ${isScrolled ? 'brightness-200' : ''
-                  }`}
+                className={`h-10 w-auto transition-all duration-300 ${
+                  isScrolled 
+                    ? 'brightness-200' 
+                    : 'brightness-0' // Force black/dark if background is light
+                }`}
               />
             </Link>
           </div>
@@ -183,53 +134,61 @@ export const Header: React.FC = () => {
 
             {/* User Auth Section */}
             {user ? (
-              <div className="relative">
-                <button
-                  ref={profileButtonRef}
-                  onClick={() => setProfileMenuOpen(!profileMenuOpen)}
-                  className="p-2 hover:bg-rare-primary-light rounded-lg transition-colors relative"
-                  aria-label="User menu"
-                >
-                  {userProfile?.avatar_url ? (
-                    <img
-                      src={userProfile.avatar_url}
-                      alt={userProfile.full_name || user.email || 'User'}
-                      className={`h-8 w-8 rounded-full object-cover border-2 ${isScrolled ? 'border-white' : 'border-rare-primary'
+              <div className="flex items-center gap-3">
+                {/* User Display Name */}
+                <span className={`hidden sm:block text-xs font-body font-semibold uppercase tracking-wider ${isScrolled ? 'text-white' : 'text-rare-primary'}`}>
+                  {userProfile?.full_name || user?.user_metadata?.full_name || user?.email?.split('@')[0]}
+                </span>
+                
+                <div className="relative">
+                  <button
+                    ref={profileButtonRef}
+                    onClick={() => setProfileMenuOpen(!profileMenuOpen)}
+                    className="p-2 hover:bg-rare-primary-light rounded-lg transition-colors relative"
+                    aria-label="User menu"
+                  >
+                    {userProfile?.avatar_url ? (
+                      <img
+                        src={userProfile.avatar_url}
+                        alt={userProfile.full_name || user?.user_metadata?.full_name || user.email || 'User'}
+                        className={`h-8 w-8 rounded-full object-cover border-2 ${isScrolled ? 'border-white' : 'border-rare-primary'
+                          }`}
+                      />
+                    ) : (
+                      <div
+                        className={`h-8 w-8 rounded-full flex items-center justify-center font-body font-semibold text-xs border transition-colors ${
+                          isScrolled
+                            ? 'bg-white text-rare-primary border-transparent'
+                            : 'bg-rare-primary text-white border-rare-primary'
                         }`}
-                    />
-                  ) : (
-                    <div
-                      className={`h-8 w-8 rounded-full flex items-center justify-center font-body font-semibold text-xs ${isScrolled
-                        ? 'bg-white text-rare-primary'
-                        : 'bg-rare-primary text-white'
-                        }`}
-                    >
-                      {userProfile?.full_name
-                        ? userProfile.full_name
-                          .trim()
-                          .split(' ')
-                          .map((n) => n[0])
-                          .slice(0, 2)
-                          .join('')
-                          .toUpperCase()
-                        : user?.email?.[0]?.toUpperCase() || 'U'}
-                    </div>
-                  )}
-                </button>
-                <UserMenu
-                  user={user}
-                  profile={userProfile}
-                  isOpen={profileMenuOpen}
-                  onClose={() => setProfileMenuOpen(false)}
-                  anchorEl={profileButtonRef.current}
-                />
+                      >
+                        {(userProfile?.full_name || user?.user_metadata?.full_name)
+                          ? (userProfile?.full_name || user?.user_metadata?.full_name)
+                            .trim()
+                            .split(' ')
+                            .map((n: any) => n[0])
+                            .slice(0, 2)
+                            .join('')
+                            .toUpperCase()
+                          : user?.email?.[0]?.toUpperCase() || 'U'}
+                      </div>
+                    )}
+                  </button>
+                  <UserMenu
+                    user={user}
+                    profile={userProfile}
+                    isOpen={profileMenuOpen}
+                    onClose={() => setProfileMenuOpen(false)}
+                    anchorEl={profileButtonRef.current}
+                  />
+                </div>
               </div>
             ) : (
               <Link
                 href="/signin"
-                className={`px-4 py-2 rounded-lg text-xs font-body font-normal tracking-rare-nav uppercase transition-colors ${isScrolled
-                  ? 'bg-white text-rare-primary hover:bg-white/90'
-                  : 'bg-rare-primary text-white hover:bg-rare-secondary'
+                className={`px-4 py-2 rounded-lg text-xs font-body font-normal tracking-rare-nav uppercase transition-colors border ${isScrolled
+                  ? 'bg-white text-rare-primary hover:bg-white/90 border-white'
+                  : 'bg-transparent text-rare-primary hover:bg-rare-primary hover:text-white border-rare-primary'
                   }`}
               >
                 Sign In
@@ -256,7 +215,41 @@ export const Header: React.FC = () => {
                 </Link>
               ))}
               {/* Mobile Auth Links */}
-              {!user && (
+              {user ? (
+                <div className="px-4 py-3 border-t border-rare-border/10 mt-2">
+                  <p className={`text-[10px] font-body font-medium uppercase tracking-[0.2em] mb-1 ${isScrolled ? 'text-white/60' : 'text-rare-primary/60'}`}>
+                    Account
+                  </p>
+                  <div className="flex items-center gap-3">
+                    <div className={`h-8 w-8 rounded-full flex items-center justify-center font-body font-semibold text-[10px] ${isScrolled
+                      ? 'bg-white text-rare-primary'
+                      : 'bg-rare-primary text-white'
+                      }`}>
+                      {(userProfile?.full_name || user?.user_metadata?.full_name)
+                        ? (userProfile?.full_name || user?.user_metadata?.full_name)
+                          .trim()
+                          .split(' ')
+                          .map((n: any) => n[0])
+                          .slice(0, 2)
+                          .join('')
+                          .toUpperCase()
+                        : user?.email?.[0]?.toUpperCase() || 'U'}
+                    </div>
+                    <div>
+                      <p className={`text-sm font-body font-semibold truncate max-w-[150px] ${isScrolled ? 'text-white' : 'text-rare-primary'}`}>
+                        {userProfile?.full_name || user?.user_metadata?.full_name || user?.email?.split('@')[0]}
+                      </p>
+                      <Link
+                        href="/profile"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className={`text-[10px] font-body hover:underline ${isScrolled ? 'text-white/70' : 'text-rare-primary/70'}`}
+                      >
+                        View Profile
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              ) : (
                 <Link
                   href="/signin"
                   onClick={() => setMobileMenuOpen(false)}

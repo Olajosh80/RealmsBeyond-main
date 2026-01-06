@@ -5,6 +5,11 @@ import { useRouter } from 'next/navigation';
 import { MdOutlineRemoveRedEye } from 'react-icons/md';
 import { RiEyeCloseLine } from 'react-icons/ri';
 import { supabase } from '@/lib/supabase';
+import { Header } from '@/components/layout/Header';
+import { Footer } from '@/components/layout/Footer';
+import { Section } from '@/components/ui/Section';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -34,42 +39,32 @@ export default function SignUpPage() {
     setError('');
 
     try {
-      const { data, error: signUpError } = await supabase.auth.signUp({
-        email: form.email,
-        password: form.password,
+      console.log('[Sign Up] Sending signup request to API...');
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: form.email,
+          password: form.password,
+          full_name: form.name,
+        }),
       });
 
-      if (signUpError) {
-        setError(signUpError.message);
-        return;
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to create account');
       }
 
-      if (data.user) {
-        // Use upsert to create/update profile
-        // This handles the case where the database trigger already created a profile
-        const { error: profileError } = await supabase
-          .from('user_profiles')
-          .upsert({
-            id: data.user.id,
-            full_name: form.name,
-            role: 'user',
-          }, {
-            onConflict: 'id'
-          });
-
-        if (profileError) {
-          console.error('Profile creation/update error:', profileError);
-          setError('Account created but profile setup failed. Please try signing in.');
-          return;
-        }
-
-        console.log('[Sign Up] Profile created/updated for user:', data.user.id);
-        setSuccess(true);
-        setTimeout(() => {
-          router.push('/signin');
-        }, 2000);
-      }
+      console.log('[Sign Up] Account created successfully:', result.user?.id);
+      setSuccess(true);
+      setTimeout(() => {
+        router.push('/signin');
+      }, 2000);
     } catch (err: any) {
+      console.error('[Sign Up] Error:', err);
       setError(err.message || 'An error occurred during sign up');
     } finally {
       setLoading(false);
@@ -77,116 +72,129 @@ export default function SignUpPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
-      <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
-        {/* Header */}
-        <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-2">Sign Up</h1>
-        <p className="text-gray-500 dark:text-gray-300 mb-6 text-sm">
-          Enter your details to create your account!
-        </p>
+    <>
+      <Header />
+      <main className="min-h-screen bg-rare-background">
+        <Section background="gradient-soft" padding="lg" withTexture>
+          <div className="container mx-auto px-4 flex items-center justify-center min-h-[70vh]">
+            <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8">
+              {/* Header */}
+              <h1 className="text-3xl font-bold text-rare-primary mb-2">Sign Up</h1>
+              <p className="text-rare-text-light mb-6 text-sm">
+                Enter your details to create your account!
+              </p>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Error Message */}
-          {error && (
-            <div className="p-3 rounded-lg bg-red-100 text-red-700 text-sm">
-              {error}
+              {/* Form */}
+              <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Error Message */}
+                {error && (
+                  <div className="p-4 rounded-xl bg-red-50 text-red-700 text-sm border border-red-100">
+                    {error}
+                  </div>
+                )}
+
+                {/* Success Message */}
+                {success && (
+                  <div className="p-4 rounded-xl bg-green-50 text-green-700 text-sm border border-green-100">
+                    Account created successfully! Redirecting to sign in...
+                  </div>
+                )}
+
+                {/* Name */}
+                <Input
+                  label="Name"
+                  type="text"
+                  name="name"
+                  value={form.name}
+                  onChange={handleChange}
+                  required
+                  placeholder="Your full name"
+                  fullWidth
+                />
+
+                {/* Email */}
+                <Input
+                  label="Email"
+                  type="email"
+                  name="email"
+                  value={form.email}
+                  onChange={handleChange}
+                  required
+                  placeholder="mail@example.com"
+                  fullWidth
+                />
+
+                {/* Password */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-body font-medium text-rare-text">
+                    Password
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      name="password"
+                      value={form.password}
+                      onChange={handleChange}
+                      required
+                      placeholder="Min. 8 characters"
+                      className="w-full px-4 py-3 border border-rare-border rounded-lg font-body text-rare-text placeholder:text-rare-text-light/50 focus:outline-none focus:ring-2 focus:ring-rare-primary focus:border-transparent transition-all"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-rare-text-light hover:text-rare-primary transition-colors"
+                      aria-label={showPassword ? "Hide password" : "Show password"}
+                    >
+                      {showPassword ? <RiEyeCloseLine size={20} /> : <MdOutlineRemoveRedEye size={20} />}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Agree to terms */}
+                <label className="flex items-center text-rare-text text-sm cursor-pointer group">
+                  <input
+                    type="checkbox"
+                    name="agree"
+                    checked={form.agree}
+                    onChange={handleChange}
+                    className="h-4 w-4 text-rare-primary rounded border-rare-border focus:ring-rare-primary mr-2 cursor-pointer"
+                    required
+                  />
+                  <span className="group-hover:text-rare-primary transition-colors">
+                    I agree to the <Link href="/terms" className="text-rare-primary font-medium hover:underline">Terms & Conditions</Link>
+                  </span>
+                </label>
+
+                {/* Submit */}
+                <Button
+                  type="submit"
+                  disabled={loading || success}
+                  fullWidth
+                  className="py-4 shadow-md hover:shadow-lg transform transition-all active:scale-[0.98]"
+                >
+                  {loading ? 'Creating account...' : success ? 'Account created!' : 'Sign Up'}
+                </Button>
+              </form>
+
+              {/* Sign In Link */}
+              <div className="mt-8 text-center space-y-4">
+                <p className="text-sm text-rare-text-light">
+                  Already have an account?
+                </p>
+                <Button 
+                  href="/signin" 
+                  variant="outline" 
+                  fullWidth 
+                  className="py-3"
+                >
+                  Sign In
+                </Button>
+              </div>
             </div>
-          )}
-
-          {/* Success Message */}
-          {success && (
-            <div className="p-3 rounded-lg bg-green-100 text-green-700 text-sm">
-              Account created successfully! Redirecting to sign in...
-            </div>
-          )}
-
-          {/* Name */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-              Name <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              name="name"
-              value={form.name}
-              onChange={handleChange}
-              required
-              placeholder="Your full name"
-              className="w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            />
           </div>
-
-          {/* Email */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-              Email <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="email"
-              name="email"
-              value={form.email}
-              onChange={handleChange}
-              required
-              placeholder="mail@example.com"
-              className="w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            />
-          </div>
-
-          {/* Password */}
-          <div className="relative">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-              Password <span className="text-red-500">*</span>
-            </label>
-            <input
-              type={showPassword ? 'text' : 'password'}
-              name="password"
-              value={form.password}
-              onChange={handleChange}
-              required
-              placeholder="Min. 8 characters"
-              className="w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
-            >
-              {showPassword ? <RiEyeCloseLine /> : <MdOutlineRemoveRedEye />}
-            </button>
-          </div>
-
-          {/* Agree to terms */}
-          <label className="flex items-center text-gray-700 dark:text-gray-200 text-sm">
-            <input
-              type="checkbox"
-              name="agree"
-              checked={form.agree}
-              onChange={handleChange}
-              className="h-4 w-4 text-blue-600 rounded border-gray-300 dark:border-gray-600 mr-2"
-              required
-            />
-            I agree to the <span className="text-blue-600 dark:text-blue-400 hover:underline">Terms & Conditions</span>
-          </label>
-
-          {/* Submit */}
-          <button
-            type="submit"
-            disabled={loading || success}
-            className="w-full py-3 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {loading ? 'Creating account...' : success ? 'Account created!' : 'Sign Up'}
-          </button>
-        </form>
-
-        {/* Sign In Link */}
-        <p className="mt-6 text-sm text-gray-500 dark:text-gray-400 text-center">
-          Already have an account?{' '}
-          <Link href="/signin" className="text-blue-600 dark:text-blue-400 font-medium hover:underline">
-            Sign In
-          </Link>
-        </p>
-      </div>
-    </div>
+        </Section>
+      </main>
+      <Footer />
+    </>
   );
 }

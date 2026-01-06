@@ -9,6 +9,9 @@ export interface UserProfile {
   role: 'admin' | 'user';
   full_name?: string;
   email?: string;
+  avatar_url?: string;
+  phone?: string;
+  address?: string;
 }
 
 interface AuthState {

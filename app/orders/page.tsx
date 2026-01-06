@@ -11,21 +11,24 @@ import { Order } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { FiPackage, FiCalendar, FiDollarSign } from 'react-icons/fi';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function OrdersPage() {
   const router = useRouter();
+  const { user, isLoading } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (isLoading) return;
+    
+    if (!user) {
+      router.push('/signin?returnTo=/orders');
+      return;
+    }
+
     (async () => {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-          router.push('/signin?returnTo=/orders');
-          return;
-        }
-
         const { data: ordersData, error } = await supabase
           .from('orders')
           .select('*')
@@ -40,7 +43,7 @@ export default function OrdersPage() {
         setLoading(false);
       }
     })();
-  }, []); // Empty dependency array - only run once on mount
+  }, [user, isLoading, router]);
 
   const getStatusColor = (status: string) => {
     switch (status) {

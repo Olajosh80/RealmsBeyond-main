@@ -24,12 +24,12 @@ export const Button: React.FC<ButtonProps> = ({
   className = '',
   fullWidth = false,
 }) => {
-  const baseStyles = 'inline-flex items-center justify-center font-body font-normal uppercase transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer select-none';
+  const baseStyles = 'inline-flex items-center justify-center font-body font-normal uppercase transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer select-none rounded-lg';
   
   const variantStyles = {
-    primary: 'bg-rare-primary text-white hover:bg-rare-secondary',
-    secondary: 'bg-rare-accent text-rare-text hover:bg-rare-accent/80',
-    outline: 'border border-rare-border text-rare-primary hover:bg-rare-primary hover:text-white',
+    primary: 'bg-[#041a45] text-white hover:bg-[#3f5071] hover:text-white hover:shadow-lg shadow-md border-none',
+    secondary: 'bg-[#edcea4] text-[#041a45] hover:bg-[#edcea4]/80 hover:text-[#041a45] hover:shadow-lg shadow-md border-none',
+    outline: 'border-2 border-[#041a45] text-[#041a45] bg-transparent hover:bg-[#041a45] hover:text-white hover:border-[#041a45] hover:shadow-lg',
   };
   
   const sizeStyles = {

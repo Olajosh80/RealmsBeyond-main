@@ -6,6 +6,11 @@ import { MdOutlineRemoveRedEye } from 'react-icons/md';
 import { RiEyeCloseLine } from 'react-icons/ri';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
+import { Header } from '@/components/layout/Header';
+import { Footer } from '@/components/layout/Footer';
+import { Section } from '@/components/ui/Section';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
 
 export default function SignInPage() {
   const router = useRouter();
@@ -40,75 +45,55 @@ export default function SignInPage() {
     setError('');
 
     try {
-      console.log('[Sign In] Calling Supabase auth endpoint for:', email);
-      const { data, error: signInError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+      console.log('[Sign In] Calling sign-in API...');
+      const response = await fetch('/api/auth/signin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
       });
 
-      if (signInError) {
-        setError(signInError.message);
-        setLoading(false);
-        return;
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Sign in failed');
       }
 
-      if (data.user) {
-        console.log('[Sign In] Sign in successful for:', data.user.email);
-        console.log('[Sign In] User ID:', data.user.id);
+      console.log('[Sign In] API Sign in successful');
+      
+      // Manually set the session in the client-side Supabase client 
+      // so other components can see the user is logged in
+      const { data: authData, error: sessionError } = await supabase.auth.setSession({
+        access_token: result.session.access_token,
+        refresh_token: result.session.refresh_token,
+      });
+
+      if (sessionError) {
+        throw new Error('Failed to establish session: ' + sessionError.message);
+      }
+
+      if (authData.user) {
+        console.log('[Sign In] Session established for:', authData.user.email);
         
-        // Immediately call profile endpoint
+        // Fetch profile and redirect
         try {
-          console.log('[Sign In] Attempting to fetch profile from /api/users/' + data.user.id);
-          const profileResponse = await fetch('/api/users/' + data.user.id);
-          
-          console.log('[Sign In] Profile API response status:', profileResponse.status);
-          
-          if (!profileResponse.ok) {
-            throw new Error(`Profile API returned status ${profileResponse.status}`);
-          }
-          
+          const profileResponse = await fetch('/api/users/' + authData.user.id);
           const profileData = await profileResponse.json();
           
-          console.log('[Sign In] Profile API response:', profileData);
-          
-          if (profileData && profileData.role) {
-            // Redirect based on role from API response
-            if (profileData.role === 'admin') {
-              console.log('[Sign In] Admin user detected, redirecting to /admin');
-              router.push('/admin');
-            } else {
-              console.log('[Sign In] Regular user, redirecting to home');
-              router.push('/');
-            }
+          if (profileData && profileData.role === 'admin') {
+            router.push('/admin');
           } else {
-            console.log('[Sign In] No role in profile, redirecting to home');
             router.push('/');
           }
         } catch (err) {
-          console.error('[Sign In] Error calling profile API:', err);
-          // Fallback: try reading from database directly
-          const { data: profile, error: profileError } = await supabase
-            .from('user_profiles')
-            .select('role')
-            .eq('id', data.user.id)
-            .maybeSingle();
-          
-          console.log('[Sign In] Fallback - Profile:', profile);
-          
-          if (profile?.role === 'admin') {
-            console.log('[Sign In] Admin detected via fallback, redirecting to /admin');
-            router.push('/admin');
-          } else {
-            console.log('[Sign In] Regular user via fallback, redirecting to home');
-            router.push('/');
-          }
+          console.error('[Sign In] Profile fetch error, defaulting to home');
+          router.push('/');
         }
-      } else {
-        console.error('[Sign In] No user returned from authentication');
       }
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'An error occurred during sign in';
-      setError(errorMessage);
+    } catch (err: any) {
+      console.error('[Sign In] Error:', err);
+      setError(err.message || 'An error occurred during sign in');
     } finally {
       setLoading(false);
     }
@@ -148,107 +133,126 @@ export default function SignInPage() {
   // Show loading state while checking if user is logged in
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-300">Loading...</p>
+      <>
+        <Header />
+        <div className="min-h-screen flex items-center justify-center bg-rare-background">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-rare-primary mx-auto"></div>
+            <p className="mt-4 text-rare-text-light">Loading...</p>
+          </div>
         </div>
-      </div>
+        <Footer />
+      </>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
-      <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
-        {/* Header */}
-        <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-2">Sign In</h1>
-        <p className="text-gray-500 dark:text-gray-300 mb-6 text-sm">
-          Enter your email and password to sign in!
-        </p>
+    <>
+      <Header />
+      <main className="min-h-screen bg-rare-background">
+        <Section background="gradient-soft" padding="lg" withTexture>
+          <div className="container mx-auto px-4 flex items-center justify-center min-h-[70vh]">
+            <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8">
+              {/* Header */}
+              <h1 className="text-3xl font-bold text-rare-primary mb-2">Sign In</h1>
+              <p className="text-rare-text-light mb-6 text-sm">
+                Enter your email and password to sign in!
+              </p>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Error Message */}
-          {error && (
-            <div className="p-3 rounded-lg bg-red-100 text-red-700 text-sm">
-              {error}
+              {/* Form */}
+              <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Error Message */}
+                {error && (
+                  <div className="p-4 rounded-xl bg-red-50 text-red-700 text-sm border border-red-100">
+                    {error}
+                  </div>
+                )}
+
+                {/* Email */}
+                <Input
+                  label="Email"
+                  type="email"
+                  name="email"
+                  value={form.email}
+                  onChange={handleChange}
+                  required
+                  placeholder="mail@example.com"
+                  fullWidth
+                />
+
+                {/* Password */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-body font-medium text-rare-text">
+                    Password
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      name="password"
+                      value={form.password}
+                      onChange={handleChange}
+                      required
+                      placeholder="Min. 8 characters"
+                      className="w-full px-4 py-3 border border-rare-border rounded-lg font-body text-rare-text placeholder:text-rare-text-light/50 focus:outline-none focus:ring-2 focus:ring-rare-primary focus:border-transparent transition-all"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-rare-text-light hover:text-rare-primary transition-colors"
+                      aria-label={showPassword ? "Hide password" : "Show password"}
+                    >
+                      {showPassword ? <RiEyeCloseLine size={20} /> : <MdOutlineRemoveRedEye size={20} />}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Remember & Forgot */}
+                <div className="flex justify-between items-center text-sm">
+                  <label className="flex items-center text-rare-text cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      name="remember"
+                      checked={form.remember}
+                      onChange={handleChange}
+                      className="h-4 w-4 text-rare-primary rounded border-rare-border focus:ring-rare-primary mr-2 cursor-pointer"
+                    />
+                    <span className="group-hover:text-rare-primary transition-colors">Keep me logged in</span>
+                  </label>
+                  <Link href="/forgot-password" title="Forgot Password" className="text-rare-primary hover:underline font-medium">
+                    Forgot password?
+                  </Link>
+                </div>
+
+                {/* Submit */}
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  fullWidth
+                  className="py-4 shadow-md hover:shadow-lg transform transition-all active:scale-[0.98]"
+                >
+                  {loading ? 'Signing in...' : 'Sign In'}
+                </Button>
+              </form>
+
+              {/* Sign Up Link */}
+              <div className="mt-8 text-center space-y-4">
+                <p className="text-sm text-rare-text-light">
+                  Not registered yet?
+                </p>
+                <Button 
+                  href="/signup" 
+                  variant="outline" 
+                  fullWidth 
+                  className="py-3"
+                >
+                  Create an Account
+                </Button>
+              </div>
             </div>
-          )}
-
-          {/* Email */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-              Email <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="email"
-              name="email"
-              value={form.email}
-              onChange={handleChange}
-              required
-              placeholder="mail@example.com"
-              className="w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            />
           </div>
-
-          {/* Password */}
-          <div className="relative">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-              Password <span className="text-red-500">*</span>
-            </label>
-            <input
-              type={showPassword ? 'text' : 'password'}
-              name="password"
-              value={form.password}
-              onChange={handleChange}
-              required
-              placeholder="Min. 8 characters"
-              className="w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
-            >
-              {showPassword ? <RiEyeCloseLine /> : <MdOutlineRemoveRedEye />}
-            </button>
-          </div>
-
-          {/* Remember & Forgot */}
-          <div className="flex justify-between items-center text-sm">
-            <label className="flex items-center text-gray-700 dark:text-gray-200">
-              <input
-                type="checkbox"
-                name="remember"
-                checked={form.remember}
-                onChange={handleChange}
-                className="h-4 w-4 text-blue-600 rounded border-gray-300 dark:border-gray-600 mr-2"
-              />
-              Keep me logged in
-            </label>
-            <Link href="/forgot-password" className="text-blue-600 dark:text-blue-400 hover:underline">
-              Forgot password?
-            </Link>
-          </div>
-
-          {/* Submit */}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-3 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {loading ? 'Signing in...' : 'Sign In'}
-          </button>
-        </form>
-
-        {/* Sign Up Link */}
-        <p className="mt-6 text-sm text-gray-500 dark:text-gray-400 text-center">
-          Not registered yet?{' '}
-          <Link href="/signup" className="text-blue-600 dark:text-blue-400 font-medium hover:underline">
-            Create an Account
-          </Link>
-        </p>
-      </div>
-    </div>
+        </Section>
+      </main>
+      <Footer />
+    </>
   );
 }

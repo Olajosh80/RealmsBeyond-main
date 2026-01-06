@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { createClient } from '@supabase/supabase-js';
+import { checkAuth, createErrorResponse, createSuccessResponse } from '@/lib/authUtils';
+import { validateOrderData } from '@/lib/validation';
 
 // GET all orders (with optional user filter)
 export async function GET(request: NextRequest) {
@@ -24,12 +26,12 @@ export async function GET(request: NextRequest) {
     const { data, error } = await query;
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return createErrorResponse(error.message, 500);
     }
 
-    return NextResponse.json(data);
+    return createSuccessResponse(data);
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return createErrorResponse(error.message, 500);
   }
 }
 
@@ -38,26 +40,26 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { items, ...orderData } = body;
-    // Validate Authorization header and resolve user
-    const authHeader = request.headers.get('authorization') || '';
-    const token = authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
 
-    if (!token) {
-      return NextResponse.json({ error: 'Unauthorized: missing token' }, { status: 401 });
+    // Validate authorization
+    const authCheck = await checkAuth(request);
+    if (!authCheck.authorized || !authCheck.userId) {
+      return createErrorResponse(authCheck.error || 'Unauthorized', 401);
     }
 
-    const { data: userData, error: userError } = await supabase.auth.getUser(token);
-    if (userError || !userData?.user) {
-      return NextResponse.json({ error: 'Unauthorized: invalid token' }, { status: 401 });
+    // Validate order data
+    const validation = validateOrderData(body);
+    if (!validation.valid) {
+      return createErrorResponse(validation.errors.join('; '), 400);
     }
 
     // Attach the authenticated user's id to the order
-    const toInsert = { ...orderData, user_id: userData.user.id };
+    const toInsert = { ...orderData, user_id: authCheck.userId };
 
     // Use a server-side service role client for writes so RLS policies can be enforced safely
     const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
     if (!SUPABASE_SERVICE_ROLE_KEY) {
-      return NextResponse.json({ error: 'Server misconfiguration: missing service role key' }, { status: 500 });
+      return createErrorResponse('Server misconfiguration: missing service role key', 500);
     }
     const supabaseAdmin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY);
 
@@ -69,7 +71,7 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (orderError) {
-      return NextResponse.json({ error: orderError.message }, { status: 500 });
+      return createErrorResponse(orderError.message, 500);
     }
 
     // Create order items if provided
@@ -84,12 +86,12 @@ export async function POST(request: NextRequest) {
         .insert(orderItems);
 
       if (itemsError) {
-        return NextResponse.json({ error: itemsError.message }, { status: 500 });
+        return createErrorResponse(itemsError.message, 500);
       }
     }
 
-    return NextResponse.json(order, { status: 201 });
+    return createSuccessResponse(order, 201);
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return createErrorResponse(error.message, 500);
   }
 }

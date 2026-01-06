@@ -10,11 +10,13 @@ import { Input } from '@/components/ui/Input';
 import { MdShoppingCart, MdCreditCard, MdLocationOn, MdPerson, MdMail, MdPhone, MdLock, MdErrorOutline } from 'react-icons/md';
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 import { useCart } from '@/contexts/CartContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 
 export default function CheckoutPage() {
   const router = useRouter();
   const { items: cartItems, clearCart, getTotalPrice, getTotalItems } = useCart();
+  const { user, isLoading } = useAuth();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -28,18 +30,10 @@ export default function CheckoutPage() {
 
   // Require authentication before allowing checkout
   useEffect(() => {
-    (async () => {
-      try {
-        const { data } = await supabase.auth.getUser();
-        if (!data?.user) {
-          router.push(`/signin?returnTo=${encodeURIComponent('/checkout')}`);
-        }
-      } catch (err) {
-        console.error('Auth check failed', err);
-        router.push(`/signin?returnTo=${encodeURIComponent('/checkout')}`);
-      }
-    })();
-  }, [router]);
+    if (!isLoading && !user) {
+      router.push(`/signin?returnTo=${encodeURIComponent('/checkout')}`);
+    }
+  }, [user, isLoading, router]);
 
   // Form data
   const [shippingInfo, setShippingInfo] = useState({
