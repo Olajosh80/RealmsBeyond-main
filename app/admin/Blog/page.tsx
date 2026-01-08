@@ -294,7 +294,7 @@ export default function BlogAdminPage() {
           </tbody>
         </table>
       </div>
-      )}
+      
     </div>
   );
 }
