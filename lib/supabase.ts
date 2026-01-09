@@ -73,6 +73,7 @@ export interface NewsletterSubscriber {
 export interface UserProfile {
   id: string;
   full_name?: string;
+  email?: string;
   role: 'admin' | 'user';
   phone?: string;
   address?: string;

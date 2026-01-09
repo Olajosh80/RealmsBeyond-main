@@ -106,8 +106,7 @@ export default function CheckoutSuccessPage() {
           {/* Next Steps */}
           <div className="grid md:grid-cols-3 gap-6 mb-8">
             <Card className="text-center">
-              <Mail className="w-12 h-12 text-rare-primary mx-auto mb-4" />
-                            <MdMail className="w-12 h-12 text-rare-primary mx-auto mb-4" />
+              <MdMail className="w-12 h-12 text-rare-primary mx-auto mb-4" />
               <h3 className="font-heading text-lg mb-2">Check Your Email</h3>
               <p className="text-sm text-rare-text-light">
                 Order confirmation sent to your email address
@@ -115,8 +114,7 @@ export default function CheckoutSuccessPage() {
             </Card>
             
             <Card className="text-center">
-              <Package className="w-12 h-12 text-rare-primary mx-auto mb-4" />
-                            <MdLocalShipping className="w-12 h-12 text-rare-primary mx-auto mb-4" />
+              <MdLocalShipping className="w-12 h-12 text-rare-primary mx-auto mb-4" />
               <h3 className="font-heading text-lg mb-2">Track Your Order</h3>
               <p className="text-sm text-rare-text-light">
                 Shipping updates will be sent via email
@@ -124,8 +122,7 @@ export default function CheckoutSuccessPage() {
             </Card>
             
             <Card className="text-center">
-              <Download className="w-12 h-12 text-rare-primary mx-auto mb-4" />
-                            <MdDownload className="w-12 h-12 text-rare-primary mx-auto mb-4" />
+              <MdDownload className="w-12 h-12 text-rare-primary mx-auto mb-4" />
               <h3 className="font-heading text-lg mb-2">Download Invoice</h3>
               <p className="text-sm text-rare-text-light">
                 Access your receipt anytime from your account
@@ -139,7 +136,7 @@ export default function CheckoutSuccessPage() {
             <div className="space-y-6">
               <div className="flex gap-4">
                 <div className="flex-shrink-0 w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                  <CheckCircle className="w-6 h-6 text-green-600" />
+                  <MdCheckCircle className="w-6 h-6 text-green-600" />
                 </div>
                 <div>
                   <h4 className="font-medium text-rare-text mb-1">Order Confirmed</h4>
@@ -149,7 +146,7 @@ export default function CheckoutSuccessPage() {
 
               <div className="flex gap-4">
                 <div className="flex-shrink-0 w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                  <Package className="w-6 h-6 text-blue-600" />
+                  <MdLocalShipping className="w-6 h-6 text-blue-600" />
                 </div>
                 <div>
                   <h4 className="font-medium text-rare-text mb-1">Processing (1-2 days)</h4>
@@ -159,10 +156,7 @@ export default function CheckoutSuccessPage() {
 
               <div className="flex gap-4">
                 <div className="flex-shrink-0 w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
-                  <ArrowRight className="w-6 h-6 text-purple-600" />
-                                  <MdArrowForward className="w-6 h-6 text-purple-600" />
-                                  <MdLocalShipping className="w-6 h-6 text-blue-600" />
-                                  <MdCheckCircle className="w-6 h-6 text-green-600" />
+                  <MdArrowForward className="w-6 h-6 text-purple-600" />
                 </div>
                 <div>
                   <h4 className="font-medium text-rare-text mb-1">Shipped (3-5 days)</h4>
@@ -172,7 +166,7 @@ export default function CheckoutSuccessPage() {
 
               <div className="flex gap-4">
                 <div className="flex-shrink-0 w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center">
-                  <CheckCircle className="w-6 h-6 text-yellow-600" />
+                  <MdCheckCircle className="w-6 h-6 text-yellow-600" />
                 </div>
                 <div>
                   <h4 className="font-medium text-rare-text mb-1">Delivered</h4>

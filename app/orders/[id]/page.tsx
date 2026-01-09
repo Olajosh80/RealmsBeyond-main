@@ -56,16 +56,16 @@ export default function OrderTrackingPage() {
 
     switch (status) {
       case 'confirmed':
-        return <CheckCircle className={`w-6 h-6 ${iconClass}`} />;
+        return <MdCheckCircle className={`w-6 h-6 ${iconClass}`} />;
       case 'processing':
-        return <Package className={`w-6 h-6 ${iconClass}`} />;
+        return <MdPackage className={`w-6 h-6 ${iconClass}`} />;
       case 'shipped':
       case 'in-transit':
-        return <Truck className={`w-6 h-6 ${iconClass}`} />;
+        return <MdLocalShipping className={`w-6 h-6 ${iconClass}`} />;
       case 'delivered':
-        return <MapPin className={`w-6 h-6 ${iconClass}`} />;
+        return <MdLocationOn className={`w-6 h-6 ${iconClass}`} />;
       default:
-        return <Package className={`w-6 h-6 ${iconClass}`} />;
+        return <MdPackage className={`w-6 h-6 ${iconClass}`} />;
     }
   };
 
@@ -100,7 +100,7 @@ export default function OrderTrackingPage() {
                       Estimated delivery: {order.estimatedDelivery}
                     </p>
                   </div>
-                  <Truck className="w-16 h-16 text-white/50" />
+                  <MdLocalShipping className="w-16 h-16 text-white/50" />
                 </div>
               </Card>
 
@@ -125,7 +125,7 @@ export default function OrderTrackingPage() {
                           {step.label}
                         </h4>
                         <p className="text-sm text-rare-text-light flex items-center gap-2">
-                          <Calendar className="w-4 h-4" />
+                          <MdEvent className="w-4 h-4" />
                           {step.date.toLocaleDateString('en-US', { 
                             month: 'short', 
                             day: 'numeric',
@@ -219,11 +219,11 @@ export default function OrderTrackingPage() {
                 </p>
                 <div className="space-y-2">
                   <a href="mailto:support@beyondrealms.com" className="flex items-center gap-2 text-sm text-rare-primary hover:underline">
-                    <Mail className="w-4 h-4" />
+                    <MdMail className="w-4 h-4" />
                     support@beyondrealms.com
                   </a>
                   <a href="tel:+1234567890" className="flex items-center gap-2 text-sm text-rare-primary hover:underline">
-                    <Phone className="w-4 h-4" />
+                    <MdPhone className="w-4 h-4" />
                     +1 (234) 567-890
                   </a>
                 </div>

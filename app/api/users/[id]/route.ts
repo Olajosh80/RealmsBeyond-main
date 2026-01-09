@@ -69,7 +69,6 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    // Delete profile (cascade will handle auth.users)
     const { error } = await supabase
       .from('user_profiles')
       .delete()

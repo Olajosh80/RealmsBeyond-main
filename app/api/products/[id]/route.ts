@@ -4,10 +4,10 @@ import { supabase } from '@/lib/supabase';
 // GET single product by ID or slug
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = params.id;
+    const { id } = await params;
     
     console.log('[API] GET /api/products/[id]');
     console.log('[API] params.id:', id);
