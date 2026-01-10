@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { FiMenu, FiX, FiSearch, FiShoppingCart, FiUser } from 'react-icons/fi';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { UserMenu } from '@/components/ui/UserMenu';
@@ -128,16 +129,18 @@ export const Header: React.FC = () => {
 
           {/* Icons & Auth */}
           <div className="flex items-center space-x-4">
-            <button
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
               onClick={() => setIsSearchOpen(true)}
-              className="p-2 hover:bg-rare-primary-light rounded-lg transition-colors"
+              className="p-2 hover:bg-rare-primary-light rounded-lg transition-colors group"
               aria-label="Search"
             >
               <FiSearch
-                className={`h-5 w-5 transition-colors ${isScrolled ? 'text-white' : 'text-rare-primary'
+                className={`h-5 w-5 transition-colors group-hover:text-rare-accent ${isScrolled ? 'text-white' : 'text-rare-primary'
                   }`}
               />
-            </button>
+            </motion.button>
             <Link
               href="/cart"
               className="p-2 hover:bg-rare-primary-light rounded-lg transition-colors relative block"
@@ -219,35 +222,55 @@ export const Header: React.FC = () => {
           </div>
         </div>
 
-        {/* Search Dropdown */}
-        {isSearchOpen && (
-          <div className={`py-4 md:py-6 border-t animate-in fade-in slide-in-from-top-2 duration-300 ${
-            isScrolled ? 'border-white/10' : 'border-rare-border/10'
-          }`}>
-            <form onSubmit={handleSearch} className="max-w-4xl mx-auto flex items-center gap-4 px-4">
-              <FiSearch className={`h-5 w-5 ${isScrolled ? 'text-white' : 'text-rare-primary'}`} />
-              <input
-                ref={searchInputRef}
-                type="text"
-                placeholder="What are you looking for?"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className={`flex-1 bg-transparent border-none focus:ring-0 font-body text-lg md:text-xl ${
-                  isScrolled ? 'text-white placeholder:text-white/50' : 'text-rare-primary placeholder:text-rare-primary/50'
-                }`}
-              />
-              <button
-                type="button"
-                onClick={() => setIsSearchOpen(false)}
-                className={`p-2 hover:bg-rare-primary-light rounded-lg transition-colors ${
-                  isScrolled ? 'text-white' : 'text-rare-primary'
-                }`}
+        {/* Search Modal Popup */}
+        <AnimatePresence>
+          {isSearchOpen && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[100] flex items-start justify-center pt-20 px-4 bg-rare-primary/95 backdrop-blur-md"
+            >
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0, y: -20 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.95, opacity: 0, y: -20 }}
+                transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+                className="w-full max-w-3xl"
               >
-                <FiX className="h-6 w-6" />
-              </button>
-            </form>
-          </div>
-        )}
+                <div className="flex justify-end mb-4">
+                  <button
+                    onClick={() => setIsSearchOpen(false)}
+                    className="p-3 text-white/70 hover:text-white hover:bg-white/10 rounded-full transition-all"
+                    aria-label="Close search"
+                  >
+                    <FiX className="h-8 w-8" />
+                  </button>
+                </div>
+                
+                <form onSubmit={handleSearch} className="relative group">
+                  <div className="absolute inset-y-0 left-6 flex items-center pointer-events-none">
+                    <FiSearch className="h-8 w-8 text-rare-accent" />
+                  </div>
+                  <input
+                    ref={searchInputRef}
+                    type="text"
+                    placeholder="Search for realms, divisions, or products..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full bg-white/10 border-2 border-white/20 text-white text-2xl md:text-3xl font-heading py-6 pl-20 pr-8 rounded-2xl placeholder:text-white/30 focus:outline-none focus:border-rare-accent focus:bg-white/15 transition-all shadow-2xl"
+                  />
+                  <div className="mt-4 flex flex-wrap gap-3 text-white/50 text-sm font-body px-2">
+                    <span>Quick Links:</span>
+                    <Link href="/products" onClick={() => setIsSearchOpen(false)} className="hover:text-rare-accent transition-colors underline decoration-white/20 underline-offset-4">Products</Link>
+                    <Link href="/divisions" onClick={() => setIsSearchOpen(false)} className="hover:text-rare-accent transition-colors underline decoration-white/20 underline-offset-4">Divisions</Link>
+                    <Link href="/about" onClick={() => setIsSearchOpen(false)} className="hover:text-rare-accent transition-colors underline decoration-white/20 underline-offset-4">About Us</Link>
+                  </div>
+                </form>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
