@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { FiMenu, FiX, FiSearch, FiShoppingCart, FiUser } from 'react-icons/fi';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -18,12 +19,32 @@ const navigation = [
 ];
 
 export const Header: React.FC = () => {
+  const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const { user, profile: userProfile } = useAuth();
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const profileButtonRef = useRef<HTMLButtonElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const { getTotalItems } = useCart();
+
+  // Focus search input when opened
+  useEffect(() => {
+    if (isSearchOpen && searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, [isSearchOpen]);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/products?q=${encodeURIComponent(searchQuery.trim())}`);
+      setIsSearchOpen(false);
+      setSearchQuery('');
+    }
+  };
 
   // Handle scroll effect
   useEffect(() => {
@@ -42,7 +63,7 @@ export const Header: React.FC = () => {
         }`}
     >
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between gap-4 py-4 md:py-6">
+        <div className="flex items-center justify-between gap-4 py-4 md:py-6 relative">
           {/* Mobile Menu Button */}
           <div className="md:hidden">
             <button
@@ -108,6 +129,7 @@ export const Header: React.FC = () => {
           {/* Icons & Auth */}
           <div className="flex items-center space-x-4">
             <button
+              onClick={() => setIsSearchOpen(true)}
               className="p-2 hover:bg-rare-primary-light rounded-lg transition-colors"
               aria-label="Search"
             >
@@ -196,6 +218,36 @@ export const Header: React.FC = () => {
             )}
           </div>
         </div>
+
+        {/* Search Dropdown */}
+        {isSearchOpen && (
+          <div className={`py-4 md:py-6 border-t animate-in fade-in slide-in-from-top-2 duration-300 ${
+            isScrolled ? 'border-white/10' : 'border-rare-border/10'
+          }`}>
+            <form onSubmit={handleSearch} className="max-w-4xl mx-auto flex items-center gap-4 px-4">
+              <FiSearch className={`h-5 w-5 ${isScrolled ? 'text-white' : 'text-rare-primary'}`} />
+              <input
+                ref={searchInputRef}
+                type="text"
+                placeholder="What are you looking for?"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className={`flex-1 bg-transparent border-none focus:ring-0 font-body text-lg md:text-xl ${
+                  isScrolled ? 'text-white placeholder:text-white/50' : 'text-rare-primary placeholder:text-rare-primary/50'
+                }`}
+              />
+              <button
+                type="button"
+                onClick={() => setIsSearchOpen(false)}
+                className={`p-2 hover:bg-rare-primary-light rounded-lg transition-colors ${
+                  isScrolled ? 'text-white' : 'text-rare-primary'
+                }`}
+              >
+                <FiX className="h-6 w-6" />
+              </button>
+            </form>
+          </div>
+        )}
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (

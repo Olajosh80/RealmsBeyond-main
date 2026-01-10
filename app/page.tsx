@@ -60,25 +60,17 @@ export default function Home() {
 
       <main>
         {/* Hero Section */}
-        <section className="relative h-[80vh] overflow-hidden text-white">
-          <img
-            src="/Geo.png" alt="Hero Background"
-            className="absolute inset-0 w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-black/50" />
-          <div className="relative z-10">
-            <Hero
-              badge="Welcome to Beyond Realms"
-              title="Transcending Boundaries. Building Realms."
-              description="A multi-sector conglomerate operating in Fashion & Beauty, Agriculture & Food, Technology & Digital Solutions, Trade & Logistics, Business Consulting, and Luxury Fragrance."
-              buttonText="Learn More"
-              buttonHref="/about"
-              secondaryButtonText="Explore Our Divisions"
-              secondaryButtonHref="/divisions"
-              centered
-            />
-          </div>
-        </section>
+        <Hero
+          badge="Welcome to Beyond Realms"
+          title="Transcending Boundaries. Building Realms."
+          description="A multi-sector conglomerate operating in Fashion & Beauty, Agriculture & Food, Technology & Digital Solutions, Trade & Logistics, Business Consulting, and Luxury Fragrance."
+          buttonText="Learn More"
+          buttonHref="/about"
+          secondaryButtonText="Explore Our Divisions"
+          secondaryButtonHref="/divisions"
+          backgroundImage="/Background.jpg"
+          centered
+        />
 
         {/* Introduction Section */}
         <Section background="gradient-soft" padding="lg" withTexture>

@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { Section } from '@/components/ui/Section';
@@ -35,15 +36,26 @@ interface Product {
   };
 }
 
-export default function ProductsPage() {
+function ProductsContent() {
   const { addItem } = useCart();
+  const searchParams = useSearchParams();
+  const initialQuery = searchParams.get('q') || '';
+  
   const [products, setProducts] = useState<Product[]>([]);
   const [divisions, setDivisions] = useState<Division[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(initialQuery);
   const [addedToCartId, setAddedToCartId] = useState<string | null>(null);
+
+  // Update searchQuery if URL param changes
+  useEffect(() => {
+    const q = searchParams.get('q');
+    if (q !== null) {
+      setSearchQuery(q);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     fetchDivisions();
@@ -301,5 +313,17 @@ export default function ProductsPage() {
 
       <Footer />
     </>
+  );
+}
+
+export default function ProductsPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-rare-background flex items-center justify-center">
+        <AiOutlineLoading3Quarters className="h-8 w-8 animate-spin text-rare-primary" />
+      </div>
+    }>
+      <ProductsContent />
+    </Suspense>
   );
 }

@@ -13,6 +13,7 @@ interface HeroProps {
   secondaryButtonHref?: string;
   backgroundImage?: string;
   backgroundVideo?: string;
+  image?: string;
   overlay?: boolean;
   centered?: boolean;
 }
@@ -27,6 +28,7 @@ export const Hero: React.FC<HeroProps> = ({
   secondaryButtonHref,
   backgroundImage,
   backgroundVideo,
+  image,
   overlay = true,
   centered = false,
 }) => {
@@ -68,53 +70,68 @@ export const Hero: React.FC<HeroProps> = ({
 
       {/* Content */}
       <div className="relative z-20 container mx-auto px-4 py-20 md:py-32">
-        <div className={`max-w-4xl ${centered ? 'mx-auto text-center' : ''}`}>
-          {badge && (
-            <div className="mb-6">
-              <span className="inline-block text-xs font-body font-normal tracking-rare-nav uppercase text-rare-accent bg-rare-primary/80 px-4 py-2 rounded-full">
-                {badge}
-              </span>
-            </div>
-          )}
+        <div className={`flex flex-col ${centered ? 'items-center text-center' : 'md:flex-row items-center gap-12'}`}>
+          <div className={`flex-1 ${centered ? 'max-w-4xl mx-auto mb-12' : 'max-w-2xl'}`}>
+            {badge && (
+              <div className="mb-6">
+                <span className="inline-block text-xs font-body font-normal tracking-rare-nav uppercase text-rare-accent bg-rare-primary/80 px-4 py-2 rounded-full">
+                  {badge}
+                </span>
+              </div>
+            )}
 
-          <h1
-            className={`font-heading text-4xl md:text-5xl lg:text-7xl font-normal leading-tight mb-6 ${
-              backgroundImage || backgroundVideo
-                ? 'text-white drop-shadow-lg'
-                : 'text-rare-primary'
-            }`}
-          >
-            {title}
-          </h1>
-
-          {description && (
-            <p
-              className={`font-body text-base md:text-lg leading-relaxed mb-8 max-w-2xl ${
+            <h1
+              className={`font-heading text-4xl md:text-5xl lg:text-7xl font-normal leading-tight mb-6 ${
                 backgroundImage || backgroundVideo
-                  ? 'text-white/90'
-                  : 'text-rare-text-light'
-              } ${centered ? 'mx-auto' : ''}`}
-            >
-              {description}
-            </p>
-          )}
-
-          {(buttonText || secondaryButtonText) && (
-            <div
-              className={`flex flex-wrap gap-4 ${
-                centered ? 'justify-center' : ''
+                  ? 'text-white drop-shadow-lg'
+                  : 'text-rare-primary'
               }`}
             >
-              {buttonText && buttonHref && (
-                <Button href={buttonHref} variant="primary" size="lg">
-                  {buttonText}
-                </Button>
-              )}
-              {secondaryButtonText && secondaryButtonHref && (
-                <Button href={secondaryButtonHref} variant="outline" size="lg">
-                  {secondaryButtonText}
-                </Button>
-              )}
+              {title}
+            </h1>
+
+            {description && (
+              <p
+                className={`font-body text-base md:text-lg leading-relaxed mb-8 ${
+                  backgroundImage || backgroundVideo
+                    ? 'text-white/90'
+                    : 'text-rare-text-light'
+                } ${centered ? 'mx-auto max-w-2xl' : ''}`}
+              >
+                {description}
+              </p>
+            )}
+
+            {(buttonText || secondaryButtonText) && (
+              <div
+                className={`flex flex-wrap gap-4 ${
+                  centered ? 'justify-center' : ''
+                }`}
+              >
+                {buttonText && buttonHref && (
+                  <Button href={buttonHref} variant="primary" size="lg">
+                    {buttonText}
+                  </Button>
+                )}
+                {secondaryButtonText && secondaryButtonHref && (
+                  <Button href={secondaryButtonHref} variant="outline" size="lg">
+                    {secondaryButtonText}
+                  </Button>
+                )}
+              </div>
+            )}
+          </div>
+
+          {image && (
+            <div className={`flex-1 w-full ${centered ? 'max-w-3xl mx-auto' : 'max-w-xl'}`}>
+              <div className={`relative aspect-square md:aspect-[21/9] rounded-3xl overflow-hidden shadow-2xl border border-white/10 group ${centered ? 'max-h-[400px]' : ''}`}>
+                <img
+                  src={image}
+                  alt={title}
+                  className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+              </div>
             </div>
           )}
         </div>

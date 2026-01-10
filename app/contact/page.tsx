@@ -263,7 +263,7 @@ export default function ContactPage() {
                                 Connect Across Every Industry
                             </h2>
                             <p className="font-body text-gray-600 mb-8">
-                                Beyond Realms LTD is more than just a company; it&apos;s a global presence.
+                                Beyond Realms LTD is more than just a company; it&apos;s a global enterprise.
                                 Whether you&apos;re interested in fashion, agriculture, technology, or trade,
                                 we have specialists ready to discuss how we can build excellence together.
                             </p>
