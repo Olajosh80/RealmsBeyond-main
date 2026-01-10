@@ -138,9 +138,11 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <h2 className="text-3xl font-bold mb-4">Settings</h2>
-      <p className="text-gray-600 dark:text-gray-400">Manage your site settings here.</p>
+    <div className="space-y-6">
+      <div className="p-6 bg-white/40 backdrop-blur-md rounded-2xl border border-white/20 shadow-xl">
+        <h2 className="text-4xl font-heading font-normal text-rare-primary mb-2">Settings</h2>
+        <p className="text-rare-text-light font-body">Manage your site configurations and security.</p>
+      </div>
 
       {/* Error Message */}
       {error && (
@@ -158,138 +160,195 @@ export default function SettingsPage() {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-6 bg-white dark:bg-gray-900 p-6 rounded-2xl border dark:border-gray-700 shadow-sm">
+      <form onSubmit={handleSubmit} className="space-y-8 bg-white/40 backdrop-blur-md p-8 rounded-2xl border border-white/20 shadow-xl">
         {/* General Settings */}
-        <h3 className="text-xl font-semibold mb-4">General</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <input
-            type="text"
-            name="siteName"
-            value={form.siteName}
-            onChange={handleChange}
-            placeholder="Site Name"
-            className="p-2 border rounded-lg w-full"
-          />
-          <input
-            type="email"
-            name="email"
-            value={form.email}
-            onChange={handleChange}
-            placeholder="Contact Email"
-            className="p-2 border rounded-lg w-full"
-          />
-          <input
-            type="text"
-            name="phone"
-            value={form.phone}
-            onChange={handleChange}
-            placeholder="Phone Number"
-            className="p-2 border rounded-lg w-full"
-          />
-          <input
-            type="text"
-            name="address"
-            value={form.address}
-            onChange={handleChange}
-            placeholder="Address"
-            className="p-2 border rounded-lg w-full"
-          />
+        <div>
+          <h3 className="text-xl font-heading font-normal text-rare-primary mb-6 flex items-center gap-2">
+            <span className="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center text-blue-600">1</span>
+            General Configuration
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-1">
+              <label className="text-xs font-body text-rare-text-light ml-1">Site Name</label>
+              <input
+                type="text"
+                name="siteName"
+                value={form.siteName}
+                onChange={handleChange}
+                placeholder="Site Name"
+                className="w-full p-2.5 bg-white/50 border border-white/30 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition font-body"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-body text-rare-text-light ml-1">Contact Email</label>
+              <input
+                type="email"
+                name="email"
+                value={form.email}
+                onChange={handleChange}
+                placeholder="Contact Email"
+                className="w-full p-2.5 bg-white/50 border border-white/30 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition font-body"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-body text-rare-text-light ml-1">Phone Number</label>
+              <input
+                type="text"
+                name="phone"
+                value={form.phone}
+                onChange={handleChange}
+                placeholder="Phone Number"
+                className="w-full p-2.5 bg-white/50 border border-white/30 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition font-body"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-body text-rare-text-light ml-1">Business Address</label>
+              <input
+                type="text"
+                name="address"
+                value={form.address}
+                onChange={handleChange}
+                placeholder="Address"
+                className="w-full p-2.5 bg-white/50 border border-white/30 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition font-body"
+              />
+            </div>
+          </div>
         </div>
 
         {/* Social Links */}
-        <h3 className="text-xl font-semibold mt-6 mb-4">Social Links</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <input
-            type="text"
-            name="facebook"
-            value={form.facebook}
-            onChange={handleChange}
-            placeholder="Facebook URL"
-            className="p-2 border rounded-lg w-full"
-          />
-          <input
-            type="text"
-            name="instagram"
-            value={form.instagram}
-            onChange={handleChange}
-            placeholder="Instagram URL"
-            className="p-2 border rounded-lg w-full"
-          />
-          <input
-            type="text"
-            name="twitter"
-            value={form.twitter}
-            onChange={handleChange}
-            placeholder="Twitter URL"
-            className="p-2 border rounded-lg w-full"
-          />
-          <input
-            type="text"
-            name="linkedin"
-            value={form.linkedin}
-            onChange={handleChange}
-            placeholder="LinkedIn URL"
-            className="p-2 border rounded-lg w-full"
-          />
+        <div className="pt-6 border-t border-white/10">
+          <h3 className="text-xl font-heading font-normal text-rare-primary mb-6 flex items-center gap-2">
+            <span className="w-8 h-8 bg-purple-500/20 rounded-lg flex items-center justify-center text-purple-600">2</span>
+            Social Media Links
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-1">
+              <label className="text-xs font-body text-rare-text-light ml-1">Facebook</label>
+              <input
+                type="text"
+                name="facebook"
+                value={form.facebook}
+                onChange={handleChange}
+                placeholder="Facebook URL"
+                className="w-full p-2.5 bg-white/50 border border-white/30 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition font-body"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-body text-rare-text-light ml-1">Instagram</label>
+              <input
+                type="text"
+                name="instagram"
+                value={form.instagram}
+                onChange={handleChange}
+                placeholder="Instagram URL"
+                className="w-full p-2.5 bg-white/50 border border-white/30 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition font-body"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-body text-rare-text-light ml-1">Twitter</label>
+              <input
+                type="text"
+                name="twitter"
+                value={form.twitter}
+                onChange={handleChange}
+                placeholder="Twitter URL"
+                className="w-full p-2.5 bg-white/50 border border-white/30 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition font-body"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-body text-rare-text-light ml-1">LinkedIn</label>
+              <input
+                type="text"
+                name="linkedin"
+                value={form.linkedin}
+                onChange={handleChange}
+                placeholder="LinkedIn URL"
+                className="w-full p-2.5 bg-white/50 border border-white/30 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition font-body"
+              />
+            </div>
+          </div>
         </div>
 
-        {/* Additional Settings */}
-        <h3 className="text-xl font-semibold mt-6 mb-4">Preferences</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <select
-            name="currency"
-            value={form.currency}
-            onChange={handleChange}
-            className="p-2 border rounded-lg w-full"
-          >
-            <option value="USD">USD - US Dollar</option>
-            <option value="EUR">EUR - Euro</option>
-            <option value="GBP">GBP - British Pound</option>
-          </select>
-          <label className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              name="darkMode"
-              checked={form.darkMode}
-              onChange={handleChange}
-            />
-            Enable Dark Mode
-          </label>
+        {/* Preferences */}
+        <div className="pt-6 border-t border-white/10">
+          <h3 className="text-xl font-heading font-normal text-rare-primary mb-6 flex items-center gap-2">
+            <span className="w-8 h-8 bg-green-500/20 rounded-lg flex items-center justify-center text-green-600">3</span>
+            Preferences
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+            <div className="space-y-1">
+              <label className="text-xs font-body text-rare-text-light ml-1">Default Currency</label>
+              <select
+                name="currency"
+                value={form.currency}
+                onChange={handleChange}
+                className="w-full p-2.5 bg-white/50 border border-white/30 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition font-body"
+              >
+                <option value="USD">USD - US Dollar</option>
+                <option value="EUR">EUR - Euro</option>
+                <option value="GBP">GBP - British Pound</option>
+              </select>
+            </div>
+            <label className="flex items-center gap-3 cursor-pointer group mt-4">
+              <div className="relative">
+                <input
+                  type="checkbox"
+                  name="darkMode"
+                  checked={form.darkMode}
+                  onChange={handleChange}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+              </div>
+              <span className="text-sm font-body text-rare-primary group-hover:text-blue-600 transition-colors">Enable Dark Mode</span>
+            </label>
+          </div>
         </div>
 
         {/* Security Settings */}
-        <h3 className="text-xl font-semibold mt-6 mb-4">Security</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <input
-            type="password"
-            name="password"
-            value={form.password}
-            onChange={handleChange}
-            placeholder="New Password"
-            className="p-2 border rounded-lg w-full"
-          />
-          <input
-            type="password"
-            name="confirmPassword"
-            value={form.confirmPassword}
-            onChange={handleChange}
-            placeholder="Confirm Password"
-            className="p-2 border rounded-lg w-full"
-          />
+        <div className="pt-6 border-t border-white/10">
+          <h3 className="text-xl font-heading font-normal text-rare-primary mb-6 flex items-center gap-2">
+            <span className="w-8 h-8 bg-red-500/20 rounded-lg flex items-center justify-center text-red-600">4</span>
+            Security & Authentication
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-1">
+              <label className="text-xs font-body text-rare-text-light ml-1">New Password</label>
+              <input
+                type="password"
+                name="password"
+                value={form.password}
+                onChange={handleChange}
+                placeholder="••••••••"
+                className="w-full p-2.5 bg-white/50 border border-white/30 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition font-body"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-body text-rare-text-light ml-1">Confirm Password</label>
+              <input
+                type="password"
+                name="confirmPassword"
+                value={form.confirmPassword}
+                onChange={handleChange}
+                placeholder="••••••••"
+                className="w-full p-2.5 bg-white/50 border border-white/30 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition font-body"
+              />
+            </div>
+          </div>
         </div>
 
         <button
           type="submit"
           disabled={saving}
-          className="w-full py-2 mt-4 text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          className="w-full py-3 mt-4 text-white bg-blue-600/80 hover:bg-blue-600 rounded-xl shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-heading text-lg"
         >
           {saving ? (
             <>
-              <AiOutlineLoading3Quarters className="h-4 w-4 animate-spin" />
-              Saving Settings...
+              <AiOutlineLoading3Quarters className="h-5 w-5 animate-spin" />
+              Saving Site Configuration...
             </>
           ) : (
-            'Save Settings'
+            'Save Changes'
           )}
         </button>
       </form>

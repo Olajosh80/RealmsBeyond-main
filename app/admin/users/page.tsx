@@ -109,15 +109,23 @@ export default function UsersPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
-        <h2 className="text-3xl font-bold">Users</h2>
-        <input
-          type="text"
-          placeholder="Search users by name, email, or role..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full md:w-64 p-2 border rounded-lg dark:bg-gray-800 dark:border-gray-600"
-        />
+      <div className="p-6 bg-white/40 backdrop-blur-md rounded-2xl border border-white/20 shadow-xl flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+        <div>
+          <h2 className="text-4xl font-heading font-normal text-rare-primary mb-2">Users</h2>
+          <p className="text-rare-text-light font-body">Manage user roles and permissions.</p>
+        </div>
+        <div className="relative">
+          <input
+            type="text"
+            placeholder="Search users..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full md:w-72 p-2.5 bg-white/50 border border-white/30 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition pl-10"
+          />
+          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-rare-text-light/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </div>
       </div>
 
       {/* Error Message */}
@@ -136,40 +144,41 @@ export default function UsersPage() {
         </div>
       )}
 
-      <div className="overflow-x-auto bg-white dark:bg-gray-900 border rounded-2xl shadow-sm dark:border-gray-700">
-        <table className="w-full text-sm border-collapse">
+      <div className="bg-white/40 backdrop-blur-md border border-white/20 rounded-2xl shadow-xl overflow-hidden">
+        <table className="w-full text-sm">
           <thead>
-            <tr className="text-left border-b dark:border-gray-700">
-              <th className="p-2">Name</th>
-              <th className="p-2">Role</th>
-              <th className="p-2">Phone</th>
-              <th className="p-2">Created</th>
-              <th className="p-2 text-right">Actions</th>
+            <tr className="text-left bg-white/20 backdrop-blur-sm border-b border-white/10">
+              <th className="p-4 font-heading font-normal text-rare-primary">Name</th>
+              <th className="p-4 font-heading font-normal text-rare-primary">Role</th>
+              <th className="p-4 font-heading font-normal text-rare-primary">Phone</th>
+              <th className="p-4 font-heading font-normal text-rare-primary">Created</th>
+              <th className="p-4 font-heading font-normal text-rare-primary text-right">Actions</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-white/5">
             {filteredUsers.map(user => (
-              <tr key={user.id} className="border-b hover:bg-gray-50 dark:hover:bg-gray-800/30 dark:border-gray-700">
-                <td className="p-2 font-medium text-gray-800 dark:text-gray-100">
-                  {user.full_name || 'N/A'}
+              <tr key={user.id} className="hover:bg-white/10 transition-colors">
+                <td className="p-4">
+                  <div className="font-medium text-rare-primary">{user.full_name || 'N/A'}</div>
+                  <div className="text-xs text-rare-text-light/70">{user.email}</div>
                 </td>
-                <td className="p-2">
+                <td className="p-4">
                   <select
                     value={user.role}
                     onChange={(e) => handleRoleChange(user.id, e.target.value)}
-                    className="px-2 py-1 text-xs rounded-lg border dark:bg-gray-800 dark:border-gray-600"
+                    className="px-3 py-1 text-xs rounded-full border border-white/20 bg-white/50 backdrop-blur-md focus:ring-2 focus:ring-blue-500 outline-none transition cursor-pointer"
                   >
                     <option value="user">User</option>
                     <option value="admin">Admin</option>
                   </select>
                 </td>
-                <td className="p-2 text-gray-600 dark:text-gray-400">{user.phone || 'N/A'}</td>
-                <td className="p-2 text-gray-600 dark:text-gray-400">
+                <td className="p-4 text-rare-text-light">{user.phone || 'N/A'}</td>
+                <td className="p-4 text-rare-text-light">
                   {new Date(user.created_at).toLocaleDateString()}
                 </td>
-                <td className="p-2 text-right space-x-2">
+                <td className="p-4 text-right">
                   <button
-                    className="px-3 py-1 text-sm text-white bg-red-500 rounded hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                    className="ml-auto px-4 py-2 text-sm text-white bg-red-500/80 hover:bg-red-600 rounded-lg shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                     onClick={() => handleDelete(user.id)}
                     disabled={actionLoading === user.id}
                   >

@@ -17,7 +17,7 @@ const Sidebar = () => {
   ];
 
   return (
-    <aside className="h-screen w-64 bg-gradient-blue dark:border-gray-800 p-5 text-white">
+    <aside className="h-screen w-64 bg-gradient-blue/90 backdrop-blur-md dark:border-gray-800 p-5 text-white border-r border-white/10">
       <h1 className="mb-8 text-xl font-bold text-white">Admin Portal</h1>
       <nav className="space-y-2">
         {menuItems.map((item) => {

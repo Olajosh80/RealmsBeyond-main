@@ -93,8 +93,8 @@ export default function AddGoodsForm({
   };
 
   return (
-    <div className="p-6 bg-white border rounded-2xl shadow-sm dark:bg-gray-900 dark:border-gray-700">
-      <h2 className="mb-4 text-lg font-semibold text-gray-800 dark:text-white">
+    <div className="p-6 bg-white/40 backdrop-blur-md border border-white/20 rounded-2xl shadow-xl dark:bg-gray-900/40">
+      <h2 className="mb-4 text-xl font-heading font-normal text-rare-primary">
         Add New Product
       </h2>
 
@@ -106,7 +106,7 @@ export default function AddGoodsForm({
           placeholder="Product Name"
           value={form.name}
           onChange={handleChange}
-          className="w-full p-2 border rounded-lg"
+          className="w-full p-2 bg-white/50 border border-white/30 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition"
           required
         />
 
@@ -115,7 +115,7 @@ export default function AddGoodsForm({
           name="category"
           value={form.category}
           onChange={handleChange}
-          className="w-full p-2 border rounded-lg"
+          className="w-full p-2 bg-white/50 border border-white/30 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition"
           required
         >
           <option value="">Select Category</option>
@@ -123,6 +123,7 @@ export default function AddGoodsForm({
           <option value="Agriculture">Agriculture & Food Tech</option>
           <option value="Trade">Trade & Logistics</option>
           <option value="Consulting">Business Consulting</option>
+          <option value="Fragrance">Luxury Fragrance</option>
         </select>
 
         {/* Price */}
@@ -132,7 +133,7 @@ export default function AddGoodsForm({
           placeholder="Price"
           value={form.price}
           onChange={handleChange}
-          className="w-full p-2 border rounded-lg"
+          className="w-full p-2 bg-white/50 border border-white/30 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition"
           required
         />
 
@@ -143,7 +144,7 @@ export default function AddGoodsForm({
           placeholder="Discount (%)"
           value={form.discount}
           onChange={handleChange}
-          className="w-full p-2 border rounded-lg"
+          className="w-full p-2 bg-white/50 border border-white/30 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition"
         />
 
         {/* Promo Code */}
@@ -153,7 +154,7 @@ export default function AddGoodsForm({
           placeholder="Promo Code (optional)"
           value={form.promoCode}
           onChange={handleChange}
-          className="w-full p-2 border rounded-lg"
+          className="w-full p-2 bg-white/50 border border-white/30 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition"
         />
 
         {/* Stock */}
@@ -163,7 +164,7 @@ export default function AddGoodsForm({
           placeholder="Stock Quantity"
           value={form.stock}
           onChange={handleChange}
-          className="w-full p-2 border rounded-lg"
+          className="w-full p-2 bg-white/50 border border-white/30 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition"
         />
 
         {/* Description */}
@@ -173,7 +174,7 @@ export default function AddGoodsForm({
           value={form.description}
           onChange={handleChange}
           rows={4}
-          className="w-full p-2 border rounded-lg resize-none"
+          className="w-full p-2 bg-white/50 border border-white/30 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 outline-none transition"
         />
 
         {/* Tags */}
@@ -183,7 +184,7 @@ export default function AddGoodsForm({
           placeholder="Tags (comma-separated, e.g., organic,eco-friendly)"
           value={form.tags}
           onChange={handleChange}
-          className="w-full p-2 border rounded-lg"
+          className="w-full p-2 bg-white/50 border border-white/30 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition"
         />
 
         {/* Status */}
@@ -191,7 +192,7 @@ export default function AddGoodsForm({
           name="status"
           value={form.status}
           onChange={handleChange}
-          className="w-full p-2 border rounded-lg"
+          className="w-full p-2 bg-white/50 border border-white/30 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition"
         >
           <option value="Active">Active</option>
           <option value="Draft">Draft</option>
@@ -208,12 +209,12 @@ export default function AddGoodsForm({
             setFile(null);
             handleChange(e);
           }}
-          className="w-full p-2 border rounded-lg"
+          className="w-full p-2 bg-white/50 border border-white/30 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition"
         />
 
         {/* OR Upload File */}
         <div>
-          <label className="block mb-1 text-sm text-gray-600 dark:text-gray-300">
+          <label className="block mb-1 text-sm text-rare-text-light dark:text-gray-300 font-body">
             Upload Image (optional)
           </label>
           <input
@@ -221,7 +222,7 @@ export default function AddGoodsForm({
             accept="image/*"
             onChange={handleFileChange}
             disabled={uploading || isSubmitting}
-            className="w-full p-2 border rounded-lg bg-gray-50 dark:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full p-2 bg-white/50 border border-white/30 rounded-lg cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition"
           />
           {uploading && (
             <div className="mt-2 flex items-center gap-2 text-sm text-blue-600">

@@ -1,7 +1,6 @@
 "use client";
 
 import React from 'react';
-import Sidebar from '@/app/admin/Sidebar/Sidebar';
 import Topbar from '@/app/admin/Topbar/topbar';
 
 /**
@@ -17,11 +16,21 @@ import Topbar from '@/app/admin/Topbar/topbar';
  */
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex h-screen bg-gray-100">
-      <Sidebar />
-      <div className="flex-1 flex flex-col">
+    <div className="flex flex-col min-h-screen relative overflow-hidden bg-gray-900">
+      {/* Background Image with Overlay */}
+      <div 
+        className="absolute inset-0 z-0 fixed"
+        style={{ 
+          backgroundImage: "url('/Background.jpg')",
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          opacity: 0.15
+        }}
+      />
+      
+      <div className="flex-1 flex flex-col relative z-10">
         <Topbar />
-        <main className="flex-1 p-6 overflow-auto">{children}</main>
+        <main className="flex-1 p-6 overflow-auto bg-white/50 backdrop-blur-[2px]">{children}</main>
       </div>
     </div>
   );

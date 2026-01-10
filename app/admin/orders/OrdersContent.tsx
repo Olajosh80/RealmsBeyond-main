@@ -103,9 +103,12 @@ export default function OrdersContent({ initialOrders }: OrdersContentProps) {
 
     return (
         <div className="space-y-6">
-            <div className="flex justify-between items-center">
-                <h1 className="text-3xl font-bold text-gray-800 dark:text-white">Manage Orders</h1>
-                {loading && <AiOutlineLoading3Quarters className="animate-spin text-blue-600 h-6 w-6" />}
+            <div className="p-6 bg-white/40 backdrop-blur-md rounded-2xl border border-white/20 shadow-xl flex justify-between items-center">
+                <div>
+                    <h1 className="text-4xl font-heading font-normal text-rare-primary mb-2">Manage Orders</h1>
+                    <p className="text-rare-text-light font-body">Track and fulfill customer orders.</p>
+                </div>
+                {loading && <AiOutlineLoading3Quarters className="animate-spin text-blue-600 h-8 w-8" />}
             </div>
 
             {/* Notifications */}
@@ -123,50 +126,50 @@ export default function OrdersContent({ initialOrders }: OrdersContentProps) {
             )}
 
             {/* Orders Table */}
-            <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden">
+            <div className="bg-white/40 backdrop-blur-md border border-white/20 rounded-2xl shadow-xl overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left">
-                        <thead className="bg-gray-50 dark:bg-gray-800/50 border-b border-gray-100 dark:border-gray-800">
+                        <thead className="bg-white/20 backdrop-blur-sm border-b border-white/10">
                             <tr>
-                                <th className="px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-300">Order ID</th>
-                                <th className="px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-300">Customer</th>
-                                <th className="px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-300">Date</th>
-                                <th className="px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-300">Total</th>
-                                <th className="px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-300">Status</th>
-                                <th className="px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-300">Payment</th>
-                                <th className="px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-300 text-right">Actions</th>
+                                <th className="px-6 py-4 font-heading font-normal text-rare-primary">Order ID</th>
+                                <th className="px-6 py-4 font-heading font-normal text-rare-primary">Customer</th>
+                                <th className="px-6 py-4 font-heading font-normal text-rare-primary">Date</th>
+                                <th className="px-6 py-4 font-heading font-normal text-rare-primary">Total</th>
+                                <th className="px-6 py-4 font-heading font-normal text-rare-primary">Status</th>
+                                <th className="px-6 py-4 font-heading font-normal text-rare-primary">Payment</th>
+                                <th className="px-6 py-4 font-heading font-normal text-rare-primary text-right">Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                        <tbody className="divide-y divide-white/5">
                             {orders.length === 0 ? (
                                 <tr>
-                                    <td colSpan={7} className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
+                                    <td colSpan={7} className="px-6 py-12 text-center text-rare-text-light font-body">
                                         No orders found.
                                     </td>
                                 </tr>
                             ) : (
                                 orders.map((order) => (
-                                    <tr key={order.id} className="hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors">
+                                    <tr key={order.id} className="hover:bg-white/10 transition-colors">
                                         <td className="px-6 py-4">
-                                            <span className="font-mono text-sm text-gray-600 dark:text-gray-400">
+                                            <span className="font-mono text-xs text-rare-text-light bg-white/20 px-2 py-1 rounded">
                                                 #{order.id.slice(0, 8)}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 text-sm">
-                                            <div className="font-medium text-gray-900 dark:text-white">{order.customer_name}</div>
-                                            <div className="text-gray-500 dark:text-gray-400 text-xs">{order.customer_email}</div>
+                                            <div className="font-medium text-rare-primary">{order.customer_name}</div>
+                                            <div className="text-rare-text-light/70 text-xs">{order.customer_email}</div>
                                         </td>
-                                        <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
+                                        <td className="px-6 py-4 text-sm text-rare-text-light">
                                             {formatDate(order.created_at)}
                                         </td>
-                                        <td className="px-6 py-4 text-sm font-semibold text-gray-900 dark:text-white">
+                                        <td className="px-6 py-4 text-sm font-semibold text-rare-primary">
                                             ${order.total_amount.toFixed(2)}
                                         </td>
                                         <td className="px-6 py-4">
                                             <select
                                                 value={order.status}
                                                 onChange={(e) => handleStatusChange(order.id, e.target.value)}
-                                                className={`text-xs font-medium px-2.5 py-1 rounded-full border-0 focus:ring-2 focus:ring-blue-500 cursor-pointer ${getStatusColor(order.status)}`}
+                                                className={`text-xs font-medium px-2.5 py-1 rounded-full border border-white/20 focus:ring-2 focus:ring-blue-500 cursor-pointer backdrop-blur-md ${getStatusColor(order.status)}`}
                                             >
                                                 <option value="pending">Pending</option>
                                                 <option value="processing">Processing</option>
@@ -179,7 +182,7 @@ export default function OrdersContent({ initialOrders }: OrdersContentProps) {
                                             <select
                                                 value={order.payment_status}
                                                 onChange={(e) => handlePaymentStatusChange(order.id, e.target.value)}
-                                                className={`text-xs font-medium px-2.5 py-1 rounded-full border-0 focus:ring-2 focus:ring-blue-500 cursor-pointer ${getPaymentStatusColor(order.payment_status)}`}
+                                                className={`text-xs font-medium px-2.5 py-1 rounded-full border border-white/20 focus:ring-2 focus:ring-blue-500 cursor-pointer backdrop-blur-md ${getPaymentStatusColor(order.payment_status)}`}
                                             >
                                                 <option value="pending">Pending</option>
                                                 <option value="paid">Paid</option>
@@ -190,7 +193,7 @@ export default function OrdersContent({ initialOrders }: OrdersContentProps) {
                                         <td className="px-6 py-4 text-right">
                                             <button
                                                 onClick={() => setSelectedOrder(order)}
-                                                className="p-2 text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 transition-colors"
+                                                className="p-2 text-rare-primary hover:bg-white/20 rounded-lg transition-all"
                                                 title="View Details"
                                             >
                                                 <MdRemoveRedEye className="h-5 w-5" />

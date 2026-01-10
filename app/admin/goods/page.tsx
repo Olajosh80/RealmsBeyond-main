@@ -133,8 +133,11 @@ export default function GoodsPage() {
   };
 
   return (
-    <div className="p-6 space-y-6">
-      <h1 className="text-3xl font-bold text-gray-800 dark:text-white">Manage Products</h1>
+    <div className="space-y-6">
+      <div className="p-6 bg-white/40 backdrop-blur-md rounded-2xl border border-white/20 shadow-xl">
+        <h1 className="text-4xl font-heading font-normal text-rare-primary mb-2">Manage Products</h1>
+        <p className="text-rare-text-light font-body">Catalog and inventory management system.</p>
+      </div>
 
       {/* Error Message */}
       {error && (

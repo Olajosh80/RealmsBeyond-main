@@ -122,8 +122,13 @@ export default function BlogAdminPage() {
   };
 
   return (
-    <div className="p-6 space-y-6">
-      <h2 className="text-3xl font-bold">Blog Posts</h2>
+    <div className="space-y-6">
+      <div className="p-6 bg-white/40 backdrop-blur-md rounded-2xl border border-white/20 shadow-xl flex justify-between items-center">
+        <div>
+          <h2 className="text-4xl font-heading font-normal text-rare-primary mb-2">Blog Posts</h2>
+          <p className="text-rare-text-light font-body">Manage your site articles and news.</p>
+        </div>
+      </div>
 
       {/* Error Message */}
       {error && (
@@ -142,61 +147,93 @@ export default function BlogAdminPage() {
       )}
 
       {/* Add Blog Form */}
-      <div className="mb-8 p-6 bg-white rounded-xl shadow-md dark:bg-gray-900 border dark:border-gray-700">
-        <h3 className="text-xl font-semibold mb-4">Add New Blog Post</h3>
+      <div className="p-6 bg-white/40 backdrop-blur-md border border-white/20 rounded-2xl shadow-xl dark:bg-gray-900/40">
+        <h3 className="text-xl font-heading font-normal text-rare-primary mb-6">Add New Blog Post</h3>
         <form onSubmit={handleAddBlog} className="space-y-4">
-          <input
-            type="text"
-            name="title"
-            placeholder="Blog Title"
-            value={form.title}
-            onChange={handleChange}
-            className="w-full p-2 border rounded-lg"
-            required
-          />
-          <input
-            type="text"
-            name="category"
-            placeholder="Category"
-            value={form.category}
-            onChange={handleChange}
-            className="w-full p-2 border rounded-lg"
-          />
-          <input
-            type="text"
-            name="author"
-            placeholder="Author Name"
-            value={form.author}
-            onChange={handleChange}
-            className="w-full p-2 border rounded-lg"
-          />
-          <textarea
-            name="excerpt"
-            placeholder="Brief excerpt (optional)..."
-            value={form.excerpt}
-            onChange={handleChange}
-            className="w-full p-2 border rounded-lg h-20"
-          />
-          <textarea
-            name="content"
-            placeholder="Write your content here..."
-            value={form.content}
-            onChange={handleChange}
-            className="w-full p-2 border rounded-lg h-40"
-            required
-          />
+          <div className="grid md:grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <label className="text-xs font-body text-rare-text-light ml-1">Title</label>
+              <input
+                type="text"
+                name="title"
+                placeholder="Blog Title"
+                value={form.title}
+                onChange={handleChange}
+                className="w-full p-2 bg-white/50 border border-white/30 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition"
+                required
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-body text-rare-text-light ml-1">Category</label>
+              <input
+                type="text"
+                name="category"
+                placeholder="Category"
+                value={form.category}
+                onChange={handleChange}
+                className="w-full p-2 bg-white/50 border border-white/30 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition"
+              />
+            </div>
+          </div>
+          
+          <div className="grid md:grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <label className="text-xs font-body text-rare-text-light ml-1">Author</label>
+              <input
+                type="text"
+                name="author"
+                placeholder="Author Name"
+                value={form.author}
+                onChange={handleChange}
+                className="w-full p-2 bg-white/50 border border-white/30 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-body text-rare-text-light ml-1">Status</label>
+              <select
+                name="status"
+                value={form.status}
+                onChange={handleChange}
+                className="w-full p-2 bg-white/50 border border-white/30 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition"
+              >
+                <option value="draft">Draft</option>
+                <option value="published">Published</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-xs font-body text-rare-text-light ml-1">Excerpt</label>
+            <textarea
+              name="excerpt"
+              placeholder="Brief excerpt (optional)..."
+              value={form.excerpt}
+              onChange={handleChange}
+              className="w-full p-2 bg-white/50 border border-white/30 rounded-lg h-20 focus:ring-2 focus:ring-blue-500 outline-none transition"
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-xs font-body text-rare-text-light ml-1">Content</label>
+            <textarea
+              name="content"
+              placeholder="Write your content here..."
+              value={form.content}
+              onChange={handleChange}
+              className="w-full p-2 bg-white/50 border border-white/30 rounded-lg h-40 focus:ring-2 focus:ring-blue-500 outline-none transition"
+              required
+            />
+          </div>
 
           {/* Image Upload */}
-          <div>
-            <label className="block mb-1 font-medium text-gray-700 dark:text-gray-300">
-              Upload Featured Image
-            </label>
+          <div className="space-y-1">
+            <label className="text-xs font-body text-rare-text-light ml-1">Featured Image</label>
             <input
               type="file"
               accept="image/*"
               onChange={handleImageUpload}
               disabled={uploading || submitting}
-              className="w-full p-2 border rounded-lg cursor-pointer bg-gray-50 dark:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full p-2 bg-white/50 border border-white/30 rounded-lg cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition"
             />
             {uploading && (
               <div className="mt-2 flex items-center gap-2 text-sm text-blue-600">
@@ -205,79 +242,78 @@ export default function BlogAdminPage() {
               </div>
             )}
             {preview && (
-              <img
-                src={preview}
-                alt="Preview"
-                className="mt-3 w-full h-48 object-cover rounded-lg border"
-              />
+              <div className="mt-3 relative h-48 w-full rounded-xl overflow-hidden border border-white/20 shadow-lg">
+                <img
+                  src={preview}
+                  alt="Preview"
+                  className="w-full h-full object-cover"
+                />
+              </div>
             )}
           </div>
 
-          <select
-            name="status"
-            value={form.status}
-            onChange={handleChange}
-            className="w-full p-2 border rounded-lg"
-          >
-            <option value="draft">Draft</option>
-            <option value="published">Published</option>
-          </select>
-          <button
-            type="submit"
-            className="py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-          >
-            Add Blog
-          </button>
+          <div className="flex justify-end pt-4">
+            <button
+              type="submit"
+              className="px-8 py-2.5 bg-blue-600/80 hover:bg-blue-600 text-white rounded-xl transition-all shadow-lg font-body"
+            >
+              Add Blog Post
+            </button>
+          </div>
         </form>
       </div>
 
       {/* Blog Table */}
-      <div className="bg-white rounded-xl shadow-md dark:bg-gray-900 overflow-x-auto">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="border-b">
-              <th className="p-2">Image</th>
-              <th className="p-2">Title</th>
-              <th className="p-2">Author</th>
-              <th className="p-2">Category</th>
-              <th className="p-2">Status</th>
-              <th className="p-2 text-right">Actions</th>
+      <div className="bg-white/40 backdrop-blur-md border border-white/20 rounded-2xl shadow-xl overflow-hidden">
+        <table className="w-full text-left">
+          <thead className="bg-white/20 backdrop-blur-sm border-b border-white/10">
+            <tr>
+              <th className="p-4 font-heading font-normal text-rare-primary">Image</th>
+              <th className="p-4 font-heading font-normal text-rare-primary">Title</th>
+              <th className="p-4 font-heading font-normal text-rare-primary">Author</th>
+              <th className="p-4 font-heading font-normal text-rare-primary">Category</th>
+              <th className="p-4 font-heading font-normal text-rare-primary">Status</th>
+              <th className="p-4 font-heading font-normal text-rare-primary text-right">Actions</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-white/5">
             {blogs.length ? (
               blogs.map((blog) => (
                 <tr
                   key={blog.id}
-                  className="border-b hover:bg-gray-50 dark:hover:bg-gray-800/30"
+                  className="hover:bg-white/10 transition-colors"
                 >
-                  <td className="p-2">
+                  <td className="p-4">
                     {blog.featured_image || blog.image ? (
                       <img
                         src={blog.featured_image || blog.image}
                         alt={blog.title}
-                        className="w-16 h-16 object-cover rounded-md"
+                        className="w-16 h-16 object-cover rounded-lg shadow-sm border border-white/20"
                       />
                     ) : (
-                      <span className="text-gray-400 italic">No image</span>
+                      <div className="w-16 h-16 bg-white/20 rounded-lg flex items-center justify-center text-[10px] text-rare-text-light italic">No image</div>
                     )}
                   </td>
-                  <td className="p-2">{blog.title}</td>
-                  <td className="p-2 text-gray-600 dark:text-gray-400">{blog.author}</td>
-                  <td className="p-2">{blog.category}</td>
-                  <td className="p-2 capitalize">
-                    <span className={`px-2 py-1 text-xs rounded-lg font-medium ${
+                  <td className="p-4 font-medium text-rare-primary">{blog.title}</td>
+                  <td className="p-4 text-rare-text-light">{blog.author}</td>
+                  <td className="p-4">
+                    <span className="px-2 py-1 bg-white/20 rounded-md text-xs">
+                      {blog.category}
+                    </span>
+                  </td>
+                  <td className="p-4 capitalize">
+                    <span className={`px-3 py-1 text-xs rounded-full font-medium shadow-sm ${
                       blog.published
-                        ? "bg-green-100 text-green-700"
-                        : "bg-gray-100 text-gray-700"
+                        ? "bg-green-500/20 text-green-700 dark:text-green-400 border border-green-500/20"
+                        : "bg-gray-500/20 text-gray-700 dark:text-gray-400 border border-gray-500/20"
                     }`}>
                       {blog.published ? 'Published' : 'Draft'}
                     </span>
                   </td>
-                  <td className="p-2 text-right">
+                  <td className="p-4 text-right">
                     <button
                       onClick={() => handleDeleteBlog(blog.id)}
-                      className="px-3 py-1 text-sm text-white bg-red-500 rounded hover:bg-red-600"
+                      className="px-4 py-2 text-sm text-white bg-red-500/80 hover:bg-red-600 rounded-lg shadow-sm transition-all font-body"
                     >
                       Delete
                     </button>

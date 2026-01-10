@@ -18,8 +18,6 @@ export default async function OrdersPage() {
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <OrdersContent initialOrders={initialOrders || []} />
-    </div>
+    <OrdersContent initialOrders={initialOrders || []} />
   );
 }
