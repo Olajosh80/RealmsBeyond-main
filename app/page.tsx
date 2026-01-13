@@ -4,56 +4,48 @@ import { Hero } from '@/components/ui/Hero';
 import { Section } from '@/components/ui/Section';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-// Added FaPumpSoap to imports
 import { FaShoppingBag, FaSeedling, FaLaptopCode, FaShippingFast, FaBriefcase, FaPumpSoap } from 'react-icons/fa';
+import dbConnect from '@/lib/db';
+import Division from '@/lib/models/Division';
 
-const divisions = [
-  {
-    id: 1,
-    name: 'Fashion & Beauty',
-    Icon: FaShoppingBag,
-    description: 'Premium fashion and beauty products including bags, clothing, and accessories',
-    href: '/divisions/fashion-beauty',
-  },
-  {
-    id: 2,
-    name: 'Agriculture & Food',
-    Icon: FaSeedling,
-    description: 'Sustainable agriculture, crops, farms, and food logistics',
-    href: '/divisions/agriculture-food',
-  },
-  {
-    id: 3,
-    name: 'Technology & Digital Solutions',
-    Icon: FaLaptopCode,
-    description: 'Cutting-edge technology and digital transformation services',
-    href: '/divisions/technology',
-  },
-  {
-    id: 4,
-    name: 'Trade & Logistics',
-    Icon: FaShippingFast,
-    description: 'Global trade and efficient logistics solutions',
-    href: '/divisions/trade-logistics',
-  },
-  {
-    id: 5,
-    name: 'Business Consulting & Investments',
-    Icon: FaBriefcase,
-    description: 'Strategic business consulting and investment opportunities',
-    href: '/divisions/business-consulting',
-  },
-  // Added Fragrance Section
-  {
-    id: 6,
-    name: 'Luxury Fragrance',
-    Icon: FaPumpSoap,
-    description: 'Exquisite perfumes, colognes, and ambient scents for every occasion',
-    href: '/divisions/fragrance',
-  },
-];
+const iconMap: Record<string, any> = {
+  'fashion-beauty': FaShoppingBag,
+  'agriculture-food': FaSeedling,
+  'technology': FaLaptopCode,
+  'trade-logistics': FaShippingFast,
+  'business-consulting': FaBriefcase,
+  'fragrance': FaPumpSoap,
+};
 
-export default function Home() {
+async function getDivisions() {
+  try {
+    await dbConnect();
+    const divisions = await Division.find().sort({ order: 1 }).lean();
+    return JSON.parse(JSON.stringify(divisions));
+  } catch (error) {
+    console.error('Error fetching divisions:', error);
+    return [];
+  }
+}
+
+export default async function Home() {
+  const dbDivisions = await getDivisions();
+  
+  // Merge or fallback to static if DB is empty
+  const displayDivisions = dbDivisions.length > 0 ? dbDivisions.map((d: any) => ({
+    id: d._id,
+    name: d.name,
+    description: d.description,
+    href: `/divisions/${d.slug}`,
+    Icon: iconMap[d.slug] || FaBriefcase
+  })) : [
+    { id: 1, name: 'Fashion & Beauty', Icon: FaShoppingBag, description: 'Premium fashion and beauty products including bags, clothing, and accessories', href: '/divisions/fashion-beauty' },
+    { id: 2, name: 'Agriculture & Food', Icon: FaSeedling, description: 'Sustainable agriculture, crops, farms, and food logistics', href: '/divisions/agriculture-food' },
+    { id: 3, name: 'Technology & Digital Solutions', Icon: FaLaptopCode, description: 'Cutting-edge technology and digital transformation services', href: '/divisions/technology' },
+    { id: 4, name: 'Trade & Logistics', Icon: FaShippingFast, description: 'Global trade and efficient logistics solutions', href: '/divisions/trade-logistics' },
+    { id: 5, name: 'Business Consulting & Investments', Icon: FaBriefcase, description: 'Strategic business consulting and investment opportunities', href: '/divisions/business-consulting' },
+    { id: 6, name: 'Luxury Fragrance', Icon: FaPumpSoap, description: 'Exquisite perfumes, colognes, and ambient scents for every occasion', href: '/divisions/fragrance' },
+  ];
   return (
     <>
       <Header />
@@ -102,7 +94,7 @@ export default function Home() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-              {divisions.map((division) => {
+              {displayDivisions.map((division: any) => {
                 const Icon = division.Icon;
                 return (
                   <Card key={division.id} hover padding="lg" href={division.href}>

@@ -4,8 +4,8 @@ import React, { useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { FiUser, FiLogOut, FiPackage, FiSettings } from 'react-icons/fi';
-import { supabase } from '@/lib/supabase';
 import { UserProfile } from '@/lib/stores/authStore';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface UserMenuProps {
   user: any;
@@ -23,6 +23,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({
   anchorEl,
 }) => {
   const router = useRouter();
+  const { signOut } = useAuth();
   const menuRef = useRef<HTMLDivElement>(null);
 
   // Handle click outside to close
@@ -61,7 +62,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({
 
   const handleLogout = async () => {
     try {
-      await supabase.auth.signOut();
+      await signOut();
       onClose();
       router.push('/');
       router.refresh();

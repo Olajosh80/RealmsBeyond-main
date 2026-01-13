@@ -1,89 +1,37 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-
-export async function GET(request: NextRequest) {
-  return handleCreateAdmin(request);
-}
+import bcrypt from 'bcryptjs';
+import User from '@/lib/models/User';
 
 export async function POST(request: NextRequest) {
-  return handleCreateAdmin(request);
-}
-
-async function handleCreateAdmin(request: NextRequest) {
   try {
-    const client = createClient(
-      supabaseUrl,
-      supabaseServiceKey || supabaseAnonKey,
-      {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false,
-        },
-      }
-    );
+    const { email, password, full_name, secret_key } = await request.json();
 
-    // Default admin credentials
-    const adminEmail = 'admin@beyondrealms.com';
-    const adminPassword = 'AdminPassword123!@#';
-    const adminName = 'Super Admin';
+    // Basic security for this initialization route
+    if (secret_key !== process.env.ADMIN_INIT_SECRET) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
 
-    // Create admin user
-    const { data: authData, error: signupError } = await client.auth.admin.createUser({
-      email: adminEmail,
-      password: adminPassword,
-      email_confirm: true,
-      user_metadata: {
-        full_name: adminName,
-      },
+    const existingAdmin = await User.findOne({ email: email.toLowerCase() });
+    if (existingAdmin) {
+      existingAdmin.role = 'admin';
+      existingAdmin.is_verified = true;
+      await existingAdmin.save();
+      return NextResponse.json({ message: 'User promoted to admin' });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 12);
+
+    const admin = await User.create({
+      email: email.toLowerCase(),
+      password: hashedPassword,
+      full_name,
+      role: 'admin',
+      is_verified: true,
     });
 
-    if (signupError) {
-      return NextResponse.json({
-        error: signupError.message,
-      }, { status: 400 });
-    }
-
-    // Create admin profile
-    if (authData.user) {
-      const { error: profileError } = await client
-        .from('user_profiles')
-        .insert([
-          {
-            id: authData.user.id,
-            full_name: adminName,
-            role: 'admin',
-          },
-        ]);
-
-      if (profileError) {
-        return NextResponse.json({
-          error: 'Failed to create admin profile',
-          details: profileError,
-        }, { status: 500 });
-      }
-
-      return NextResponse.json({
-        message: 'Default admin created',
-        email: adminEmail,
-        password: adminPassword,
-        signInUrl: '/signin',
-        adminUrl: '/admin',
-      });
-    }
-
-    return NextResponse.json({
-      error: 'Failed to create admin',
-    }, { status: 500 });
-
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    return NextResponse.json({
-      error: errorMessage,
-    }, { status: 500 });
+    return NextResponse.json({ message: 'Admin user created successfully', adminId: admin._id });
+  } catch (error: any) {
+    console.error('[Init Admin API] Error:', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
-

@@ -9,6 +9,18 @@ import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { UserMenu } from '@/components/ui/UserMenu';
 import { UserProfile } from '@/lib/stores/authStore';
+import { useDebounce } from '@/hooks/useDebounce';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
+
+interface Product {
+  _id: string;
+  name: string;
+  slug: string;
+  description: string;
+  price: number;
+  images: string[];
+  category: string;
+}
 
 const navigation = [
   { name: 'Home', href: '/' },
@@ -27,9 +39,14 @@ export const Header: React.FC = () => {
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<Product[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
+
   const profileButtonRef = useRef<HTMLButtonElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const { getTotalItems } = useCart();
+  const { settings } = useSiteSettings();
 
   // Focus search input when opened
   useEffect(() => {
@@ -38,13 +55,47 @@ export const Header: React.FC = () => {
     }
   }, [isSearchOpen]);
 
+  // Handle Search API Call
+  useEffect(() => {
+    const fetchResults = async () => {
+      if (!debouncedSearchQuery.trim()) {
+        setSearchResults([]);
+        return;
+      }
+
+      setIsSearching(true);
+      try {
+        const response = await fetch(`/api/products?search=${encodeURIComponent(debouncedSearchQuery)}&limit=5`);
+        if (response.ok) {
+          const data = await response.json();
+          // Handle both paginated and non-paginated responses just in case, though API is paginated now
+          setSearchResults(data.products || data);
+        }
+      } catch (error) {
+        console.error('Search error:', error);
+        setSearchResults([]);
+      } finally {
+        setIsSearching(false);
+      }
+    };
+
+    fetchResults();
+  }, [debouncedSearchQuery]);
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
       router.push(`/products?q=${encodeURIComponent(searchQuery.trim())}`);
       setIsSearchOpen(false);
       setSearchQuery('');
+      setSearchResults([]);
     }
+  };
+
+  const handleCloseSearch = () => {
+    setIsSearchOpen(false);
+    setSearchQuery('');
+    setSearchResults([]);
   };
 
   // Handle scroll effect
@@ -100,13 +151,12 @@ export const Header: React.FC = () => {
           <div className="flex-shrink-0">
             <Link href="/" className="block">
               <img
-                src="/logo.png"
-                alt="Beyond Realms Logo"
-                className={`h-10 w-auto transition-all duration-300 ${
-                  isScrolled 
-                    ? 'brightness-200' 
-                    : 'brightness-0' // Force black/dark if background is light
-                }`}
+                src={settings?.logo_url || "/logo.png"}
+                alt={settings?.site_name || "Beyond Realms Logo"}
+                className={`h-10 w-auto transition-all duration-300 ${isScrolled
+                  ? 'brightness-200'
+                  : 'brightness-0' // Force black/dark if background is light
+                  }`}
               />
             </Link>
           </div>
@@ -164,7 +214,7 @@ export const Header: React.FC = () => {
                 <span className={`hidden sm:block text-xs font-body font-semibold uppercase tracking-wider ${isScrolled ? 'text-white' : 'text-rare-primary'}`}>
                   {userProfile?.full_name || user?.user_metadata?.full_name || user?.email?.split('@')[0]}
                 </span>
-                
+
                 <div className="relative">
                   <button
                     ref={profileButtonRef}
@@ -181,11 +231,10 @@ export const Header: React.FC = () => {
                       />
                     ) : (
                       <div
-                        className={`h-8 w-8 rounded-full flex items-center justify-center font-body font-semibold text-xs border transition-colors ${
-                          isScrolled
-                            ? 'bg-white text-rare-primary border-transparent'
-                            : 'bg-rare-primary text-white border-rare-primary'
-                        }`}
+                        className={`h-8 w-8 rounded-full flex items-center justify-center font-body font-semibold text-xs border transition-colors ${isScrolled
+                          ? 'bg-white text-rare-primary border-transparent'
+                          : 'bg-rare-primary text-white border-rare-primary'
+                          }`}
                       >
                         {(userProfile?.full_name || user?.user_metadata?.full_name)
                           ? (userProfile?.full_name || user?.user_metadata?.full_name)
@@ -247,7 +296,7 @@ export const Header: React.FC = () => {
                     <FiX className="h-8 w-8" />
                   </button>
                 </div>
-                
+
                 <form onSubmit={handleSearch} className="relative group">
                   <div className="absolute inset-y-0 left-6 flex items-center pointer-events-none">
                     <FiSearch className="h-8 w-8 text-rare-accent" />
@@ -266,6 +315,58 @@ export const Header: React.FC = () => {
                     <Link href="/divisions" onClick={() => setIsSearchOpen(false)} className="hover:text-rare-accent transition-colors underline decoration-white/20 underline-offset-4">Divisions</Link>
                     <Link href="/about" onClick={() => setIsSearchOpen(false)} className="hover:text-rare-accent transition-colors underline decoration-white/20 underline-offset-4">About Us</Link>
                   </div>
+
+                  {/* Search Results Dropdown */}
+                  {(isSearching || searchQuery.trim().length > 0) && (
+                    <div className="mt-8 bg-white rounded-2xl overflow-hidden shadow-2xl max-h-[60vh] overflow-y-auto">
+                      {isSearching ? (
+                        <div className="p-8 text-center text-rare-primary">
+                          <div className="animate-spin h-8 w-8 border-2 border-rare-primary border-t-transparent rounded-full mx-auto mb-2" />
+                          <p className="font-body text-sm">Searching realms...</p>
+                        </div>
+                      ) : searchResults.length > 0 ? (
+                        <ul className="divide-y divide-gray-100">
+                          {searchResults.map((product) => (
+                            <li key={product._id}>
+                              <Link
+                                href={`/products/${product.slug}`}
+                                onClick={() => setIsSearchOpen(false)}
+                                className="flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors group"
+                              >
+                                <div className="h-12 w-12 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                                  {product.images?.[0] ? (
+                                    <img src={product.images[0]} alt={product.name} className="h-full w-full object-cover" />
+                                  ) : (
+                                    <div className="h-full w-full flex items-center justify-center text-gray-400">
+                                      <FiSearch />
+                                    </div>
+                                  )}
+                                </div>
+                                <div>
+                                  <h4 className="font-heading text-lg font-normal text-rare-primary group-hover:text-rare-secondary transition-colors">
+                                    {product.name}
+                                  </h4>
+                                  <p className="text-xs text-rare-text-light">{product.category} • ₦{product.price.toLocaleString()}</p>
+                                </div>
+                              </Link>
+                            </li>
+                          ))}
+                          <li className="p-2 text-center bg-gray-50">
+                            <button
+                              onClick={(e) => handleSearch(e)}
+                              className="text-sm text-rare-primary hover:underline font-medium py-2 w-full block"
+                            >
+                              View all results
+                            </button>
+                          </li>
+                        </ul>
+                      ) : (
+                        <div className="p-8 text-center text-rare-text-light">
+                          <p className="font-body">No products found for "{searchQuery}"</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </form>
               </motion.div>
             </motion.div>

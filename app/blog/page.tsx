@@ -12,7 +12,17 @@ import { MdEvent, MdPerson, MdLocalOffer } from 'react-icons/md';
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 import { FiCalendar, FiUser } from 'react-icons/fi';
 import { MdLocalOffer as MdTag } from 'react-icons/md';
-import type { BlogPost } from '@/lib/supabase';
+type BlogPost = {
+  id: string;
+  _id?: string;
+  title: string;
+  category: string;
+  excerpt: string;
+  author: string;
+  published: boolean;
+  published_at?: string;
+  tags?: string[];
+};
 
 type NewsletterStatus = 'idle' | 'loading' | 'success' | 'error';
 
@@ -33,9 +43,11 @@ export default function BlogPage() {
         if (!res.ok) {
           throw new Error('Failed to load blog posts');
         }
-        const data: BlogPost[] = await res.json();
-        // Extra safety: filter published on client as well
-        setPosts(data.filter((post) => post.published));
+        const data = await res.json();
+        // Handle paginated response structure
+        const blogPosts = data.posts || data;
+        // Extra safety: filter published on client as well (though API should handle it)
+        setPosts(blogPosts.filter((post: BlogPost) => post.published));
       } catch (err) {
         console.error('Error fetching blog posts:', err);
         setError('Unable to load blog posts right now. Please try again later.');
@@ -88,7 +100,7 @@ export default function BlogPage() {
   return (
     <>
       <Header />
-      
+
       <main>
         {/* Hero Section */}
         <Hero
@@ -97,7 +109,7 @@ export default function BlogPage() {
           description="Discover the latest insights, trends, and news from across our divisions"
           centered
         />
-        
+
         {/* Newsletter Section */}
         <Section background="alt" padding="md">
           <div className="container">
@@ -139,7 +151,7 @@ export default function BlogPage() {
             </div>
           </div>
         </Section>
-        
+
         {/* Category Filter */}
         <Section background="default" padding="sm">
           <div className="container">
@@ -148,11 +160,10 @@ export default function BlogPage() {
                 <button
                   key={category}
                   onClick={() => setSelectedCategory(category)}
-                  className={`px-4 py-2 rounded-lg text-xs font-body font-normal tracking-rare-nav uppercase whitespace-nowrap transition-all ${
-                    selectedCategory === category
+                  className={`px-4 py-2 rounded-lg text-xs font-body font-normal tracking-rare-nav uppercase whitespace-nowrap transition-all ${selectedCategory === category
                       ? 'bg-rare-primary text-white'
                       : 'bg-white text-rare-primary hover:bg-rare-primary-light border border-rare-border'
-                  }`}
+                    }`}
                 >
                   {category}
                 </button>
@@ -233,7 +244,7 @@ export default function BlogPage() {
           </div>
         </Section>
       </main>
-      
+
       <Footer />
     </>
   );

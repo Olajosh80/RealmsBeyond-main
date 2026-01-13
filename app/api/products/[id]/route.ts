@@ -1,63 +1,76 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import Product from '@/lib/models/Product';
+import { getAuthUser } from '@/lib/auth';
 
-// GET single product by ID or slug
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = await params;
-    
-    console.log('[API] GET /api/products/[id]');
-    console.log('[API] params.id:', id);
-    console.log('[API] params.id type:', typeof id);
-    
-    if (!id || id === 'undefined') {
-      console.warn('[API] Product ID is missing or undefined');
-      return NextResponse.json({ error: 'Product ID is required' }, { status: 400 });
+    const { id } = params;
+
+    let product;
+    if (id.match(/^[0-9a-fA-F]{24}$/)) {
+      product = await Product.findById(id).populate('division_id');
+    } else {
+      product = await Product.findOne({ slug: id }).populate('division_id');
+    }
+    if (!product) {
+      return NextResponse.json({ error: 'Product not found' }, { status: 404 });
     }
 
-    console.log('[API] Fetching product with ID:', id);
-    
-    // Try to fetch by ID first (faster)
-    const query = supabase
-      .from('products')
-      .select('*, division:divisions(*)')
-      .eq('id', id)
-      .single();
+    return NextResponse.json(product);
+  } catch (error: any) {
+    console.error('[Product Detail API] GET Error:', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
+}
 
-    let { data, error } = await query;
-    
-    console.log('[API] ID query result:', { found: !!data, errorCode: error?.code });
-
-    // If not found by ID, try slug
-    if (error && error.code === 'PGRST116') {
-      console.log('[API] Not found by ID, trying slug:', id);
-      const slugQuery = supabase
-        .from('products')
-        .select('*, division:divisions(*)')
-        .eq('slug', id)
-        .single();
-
-      ({ data, error } = await slugQuery);
-      console.log('[API] Slug query result:', { found: !!data, errorCode: error?.code });
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const user = await getAuthUser();
+    if (!user || user.role !== 'admin') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    if (error) {
-      if (error.code === 'PGRST116') {
-        console.warn('[API] Product not found with ID or slug:', id);
-        return NextResponse.json({ error: 'Product not found' }, { status: 404 });
-      }
-      console.error('[API] Database error:', error.message);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+    const { id } = params;
+    const body = await request.json();
+
+    const product = await Product.findByIdAndUpdate(id, body, { new: true });
+    if (!product) {
+      return NextResponse.json({ error: 'Product not found' }, { status: 404 });
     }
 
-    console.log('[API] Product found:', data?.name);
-    return NextResponse.json(data);
-  } catch (error: unknown) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    console.error('[API] Exception:', errorMessage);
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
+    return NextResponse.json(product);
+  } catch (error: any) {
+    console.error('[Product Detail API] PUT Error:', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
+}
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const user = await getAuthUser();
+    if (!user || user.role !== 'admin') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { id } = params;
+
+    const product = await Product.findByIdAndDelete(id);
+    if (!product) {
+      return NextResponse.json({ error: 'Product not found' }, { status: 404 });
+    }
+
+    return NextResponse.json({ message: 'Product deleted successfully' });
+  } catch (error: any) {
+    console.error('[Product Detail API] DELETE Error:', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

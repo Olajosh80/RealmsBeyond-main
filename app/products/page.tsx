@@ -40,7 +40,7 @@ function ProductsContent() {
   const { addItem } = useCart();
   const searchParams = useSearchParams();
   const initialQuery = searchParams.get('q') || '';
-  
+
   const [products, setProducts] = useState<Product[]>([]);
   const [divisions, setDivisions] = useState<Division[]>([]);
   const [loading, setLoading] = useState(true);
@@ -58,36 +58,37 @@ function ProductsContent() {
   }, [searchParams]);
 
   useEffect(() => {
-    fetchDivisions();
-    fetchProducts();
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const [divRes, prodRes] = await Promise.all([
+          fetch('/api/divisions'),
+          fetch('/api/products?in_stock=true')
+        ]);
+
+        if (!divRes.ok) throw new Error('Failed to fetch divisions');
+        if (!prodRes.ok) throw new Error('Failed to fetch products');
+
+        const [divData, prodData] = await Promise.all([
+          divRes.json(),
+          prodRes.json()
+        ]);
+
+        setDivisions(divData);
+        // Products API returns { products: [], pagination: {} }
+        setProducts(prodData.products || (Array.isArray(prodData) ? prodData : []));
+      } catch (error: any) {
+        console.error('Error loading data:', error);
+        setError('Unable to load products right now. Please try again shortly.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
   }, []);
-
-  const fetchDivisions = async () => {
-    try {
-      const response = await fetch('/api/divisions');
-      if (!response.ok) throw new Error('Failed to fetch divisions');
-      const data = await response.json();
-      setDivisions(data);
-    } catch (error) {
-      console.error('Error fetching divisions:', error);
-    }
-  };
-
-  const fetchProducts = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await fetch('/api/products?in_stock=true');
-      if (!response.ok) throw new Error('Failed to fetch products');
-      const data = await response.json();
-      setProducts(data);
-    } catch (error) {
-      console.error('Error fetching products:', error);
-      setError('Unable to load products right now. Please try again shortly.');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   // Get unique categories from products and divisions
   const categories = ['All', ...divisions.map((div) => div.name)];
@@ -150,11 +151,10 @@ function ProductsContent() {
                   <button
                     key={category}
                     onClick={() => setSelectedCategory(category)}
-                    className={`px-5 py-2.5 rounded-lg text-sm font-body font-normal uppercase tracking-rare-nav whitespace-nowrap transition-all border ${
-                      selectedCategory === category
-                        ? 'bg-rare-primary text-white border-rare-primary'
-                        : 'bg-white text-rare-primary border-rare-border hover:bg-rare-primary-light hover:border-rare-primary'
-                    }`}
+                    className={`px-5 py-2.5 rounded-lg text-sm font-body font-normal uppercase tracking-rare-nav whitespace-nowrap transition-all border ${selectedCategory === category
+                      ? 'bg-rare-primary text-white border-rare-primary'
+                      : 'bg-white text-rare-primary border-rare-border hover:bg-rare-primary-light hover:border-rare-primary'
+                      }`}
                   >
                     {category}
                   </button>
@@ -241,11 +241,11 @@ function ProductsContent() {
                       </Link>
                       <div className="flex items-center gap-3 mb-4">
                         <span className="font-body text-xl font-semibold text-rare-primary">
-                          ${product.price.toFixed(2)}
+                          ₦{product.price.toLocaleString()}
                         </span>
                         {product.compare_at_price && product.compare_at_price > product.price && (
                           <span className="font-body text-sm text-rare-text-light line-through">
-                            ${product.compare_at_price.toFixed(2)}
+                            ₦{product.compare_at_price.toLocaleString()}
                           </span>
                         )}
                       </div>

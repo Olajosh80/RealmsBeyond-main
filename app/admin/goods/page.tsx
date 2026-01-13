@@ -2,8 +2,6 @@
 import React, { useState, useEffect } from "react";
 import AddGoodsForm from "@/components/admin/AddGoodsForm";
 import GoodsTable from "@/components/admin/GoodsTable";
-import { supabase } from "@/lib/supabase";
-import { Product } from "@/lib/supabase";
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 import { MdErrorOutline, MdCheckCircle } from 'react-icons/md';
 
@@ -14,17 +12,17 @@ export default function GoodsPage() {
   const [success, setSuccess] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<boolean>(false);
 
-  // Fetch products from Supabase
+  // Fetch products from API
   const fetchProducts = async () => {
     try {
       setLoading(true);
       setError(null);
-      const { data, error: fetchError } = await supabase
-        .from('products')
-        .select('*, division:divisions(*)')
-        .order('created_at', { ascending: false });
-
-      if (fetchError) throw fetchError;
+      const response = await fetch('/api/products');
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to fetch products');
+      }
+      const data = await response.json();
       setGoods(data || []);
     } catch (err: any) {
       console.error('Error fetching products:', err);
@@ -77,17 +75,15 @@ export default function GoodsPage() {
         tags: Array.isArray(newGood.tags) ? newGood.tags : [],
       };
 
-      console.log('[Goods] Adding product with data:', productData);
+      const response = await fetch('/api/products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(productData),
+      });
 
-      const { data, error: insertError } = await supabase
-        .from('products')
-        .insert([productData])
-        .select()
-        .single();
-
-      if (insertError) {
-        console.error('[Goods] Insert error detail:', insertError);
-        throw insertError;
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to add product');
       }
 
       setSuccess('Product added successfully!');
@@ -95,9 +91,7 @@ export default function GoodsPage() {
       setTimeout(() => setSuccess(null), 3000);
     } catch (err: any) {
       console.error('[Goods] Catch block error:', err);
-      // Try to extract a useful message
-      const errorMessage = typeof err === 'object' ? (err.message || err.details || JSON.stringify(err)) : String(err);
-      setError(errorMessage || 'Failed to add product. Please try again.');
+      setError(err.message || 'Failed to add product. Please try again.');
       setTimeout(() => setError(null), 5000);
     } finally {
       setActionLoading(false);
@@ -113,12 +107,14 @@ export default function GoodsPage() {
       setError(null);
       setSuccess(null);
 
-      const { error: deleteError } = await supabase
-        .from('products')
-        .delete()
-        .eq('id', id);
+      const response = await fetch(`/api/products/${id}`, {
+        method: 'DELETE',
+      });
 
-      if (deleteError) throw deleteError;
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to delete product');
+      }
 
       setSuccess('Product deleted successfully!');
       await fetchProducts();

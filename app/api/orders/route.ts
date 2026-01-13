@@ -1,97 +1,118 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
-import { createClient } from '@supabase/supabase-js';
-import { checkAuth, createErrorResponse, createSuccessResponse } from '@/lib/authUtils';
+import mongoose from 'mongoose';
+import dbConnect from '@/lib/db';
+import Order from '@/lib/models/Order';
+import OrderItem from '@/lib/models/OrderItem';
+import { getAuthUser } from '@/lib/auth';
 import { validateOrderData } from '@/lib/validation';
+import { initializeTransaction } from '@/lib/paystack';
 
-// GET all orders (with optional user filter)
 export async function GET(request: NextRequest) {
   try {
+    await dbConnect();
+    const user = await getAuthUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('user_id');
     const status = searchParams.get('status');
 
-    let query = supabase.from('orders').select('*, order_items(*)');
-
-    if (userId) {
-      query = query.eq('user_id', userId);
+    const filter: any = {};
+    // If not admin, restrict to own orders
+    if (user.role !== 'admin') {
+      filter.user_id = user.userId;
     }
 
-    if (status) {
-      query = query.eq('status', status);
-    }
+    if (status) filter.status = status;
 
-    query = query.order('created_at', { ascending: false });
+    const orders = await Order.find(filter).sort({ created_at: -1 }).lean();
 
-    const { data, error } = await query;
+    // Optimized: Fetch all items for these orders in one query
+    const orderIds = orders.map(o => o._id);
+    const allItems = await OrderItem.find({ order_id: { $in: orderIds } }).lean();
 
-    if (error) {
-      return createErrorResponse(error.message, 500);
-    }
+    const ordersWithItems = orders.map(order => {
+      const items = allItems.filter(item => item.order_id.toString() === order._id.toString());
+      return { ...order, items };
+    });
 
-    return createSuccessResponse(data);
+    return NextResponse.json(ordersWithItems);
   } catch (error: any) {
-    return createErrorResponse(error.message, 500);
+    console.error('[Orders API] GET Error:', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
 
-// POST - Create new order
 export async function POST(request: NextRequest) {
+  await dbConnect();
+  const session = await mongoose.startSession();
+  session.startTransaction();
   try {
+    const user = await getAuthUser();
+    if (!user) {
+      await session.abortTransaction();
+      session.endSession();
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const body = await request.json();
-    const { items, ...orderData } = body;
+    const { items, shipping, total } = body;
 
-    // Validate authorization
-    const authCheck = await checkAuth(request);
-    if (!authCheck.authorized || !authCheck.userId) {
-      return createErrorResponse(authCheck.error || 'Unauthorized', 401);
-    }
+    // Create order within transaction
+    const [order] = await Order.create([{
+      user_id: user.userId,
+      customer_name: shipping.fullName,
+      customer_email: shipping.email,
+      customer_phone: shipping.phone,
+      shipping_address: `${shipping.address}, ${shipping.city}, ${shipping.state} ${shipping.zipCode}, ${shipping.country}`,
+      total_amount: total,
+      status: 'pending',
+      payment_status: 'pending',
+    }], { session });
 
-    // Validate order data
-    const validation = validateOrderData(body);
-    if (!validation.valid) {
-      return createErrorResponse(validation.errors.join('; '), 400);
-    }
-
-    // Attach the authenticated user's id to the order
-    const toInsert = { ...orderData, user_id: authCheck.userId };
-
-    // Use a server-side service role client for writes so RLS policies can be enforced safely
-    const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-    if (!SUPABASE_SERVICE_ROLE_KEY) {
-      return createErrorResponse('Server misconfiguration: missing service role key', 500);
-    }
-    const supabaseAdmin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY);
-
-    // Create order
-    const { data: order, error: orderError } = await supabaseAdmin
-      .from('orders')
-      .insert([toInsert])
-      .select()
-      .single();
-
-    if (orderError) {
-      return createErrorResponse(orderError.message, 500);
-    }
-
-    // Create order items if provided
+    // Create order items within transaction
     if (items && items.length > 0) {
       const orderItems = items.map((item: any) => ({
-        ...item,
-        order_id: order.id,
+        order_id: order._id,
+        product_id: item.id,
+        product_name: item.name,
+        product_price: item.price,
+        quantity: item.quantity,
+        subtotal: item.price * item.quantity,
       }));
-
-      const { error: itemsError } = await supabase
-        .from('order_items')
-        .insert(orderItems);
-
-      if (itemsError) {
-        return createErrorResponse(itemsError.message, 500);
-      }
+      await OrderItem.insertMany(orderItems, { session });
     }
 
-    return createSuccessResponse(order, 201);
+    await session.commitTransaction();
+    session.endSession();
+
+    // Initialize Paystack payment
+    try {
+      const paystackResponse = await initializeTransaction(
+        shipping.email,
+        total,
+        { order_id: order._id.toString() }
+      );
+
+      return NextResponse.json({
+        order,
+        payment_url: paystackResponse.data.authorization_url,
+        reference: paystackResponse.data.reference
+      }, { status: 201 });
+    } catch (paystackError: any) {
+      console.error('Paystack Initialization Error:', paystackError);
+      return NextResponse.json({
+        order,
+        error: 'Order created but failed to initialize payment. Please try paying from your profile.'
+      }, { status: 201 });
+    }
   } catch (error: any) {
-    return createErrorResponse(error.message, 500);
+    if (session.inTransaction()) {
+      await session.abortTransaction();
+    }
+    session.endSession();
+    console.error('[Orders API] POST Error:', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

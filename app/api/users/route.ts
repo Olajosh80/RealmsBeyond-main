@@ -1,28 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import dbConnect from '@/lib/db';
+import User from '@/lib/models/User';
+import { getAuthUser } from '@/lib/auth';
 
-// GET all users (admin only)
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    const { searchParams } = new URL(request.url);
-    const role = searchParams.get('role');
-
-    let query = supabase.from('user_profiles').select('*');
-
-    if (role) {
-      query = query.eq('role', role);
+    await dbConnect();
+    const user = await getAuthUser();
+    if (!user || user.role !== 'admin') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    query = query.order('created_at', { ascending: false });
-
-    const { data, error } = await query;
-
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-
-    return NextResponse.json(data);
+    const users = await User.find().select('-password').sort({ created_at: -1 }).lean();
+    return NextResponse.json(users);
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error('[Users API] GET Error:', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

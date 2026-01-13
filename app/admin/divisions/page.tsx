@@ -27,12 +27,7 @@ export default function AdminDivisions() {
   async function fetchDivisions() {
     setLoading(true);
     try {
-      // include auth token for protected endpoints
-      const session = await (await import('@/lib/supabase')).supabase.auth.getSession();
-      const token = session.data?.session?.access_token;
-      const headers: any = { 'Content-Type': 'application/json' };
-      if (token) headers['Authorization'] = `Bearer ${token}`;
-      const res = await fetch('/api/divisions', { headers });
+      const res = await fetch('/api/divisions');
       const data = await res.json();
       setDivisions(data || []);
     } catch (err) {
@@ -50,21 +45,16 @@ export default function AdminDivisions() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     try {
-      const session = await (await import('@/lib/supabase')).supabase.auth.getSession();
-      const token = session.data?.session?.access_token;
-      const headers: any = { 'Content-Type': 'application/json' };
-      if (token) headers['Authorization'] = `Bearer ${token}`;
-
       if (editingId) {
         await fetch(`/api/divisions/${editingId}`, {
           method: 'PATCH',
-          headers,
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(form),
         });
       } else {
         await fetch('/api/divisions', {
           method: 'POST',
-          headers,
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(form),
         });
       }
@@ -83,11 +73,7 @@ export default function AdminDivisions() {
   async function handleDelete(id: string) {
     if (!confirm('Delete this division?')) return;
     try {
-      const session = await (await import('@/lib/supabase')).supabase.auth.getSession();
-      const token = session.data?.session?.access_token;
-      const headers: any = {};
-      if (token) headers['Authorization'] = `Bearer ${token}`;
-      await fetch(`/api/divisions/${id}`, { method: 'DELETE', headers });
+      await fetch(`/api/divisions/${id}`, { method: 'DELETE' });
       await fetchDivisions();
     } catch (err) {
       console.error(err);

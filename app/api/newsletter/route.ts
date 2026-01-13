@@ -1,37 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import dbConnect from '@/lib/db';
+import NewsletterSubscriber from '@/lib/models/NewsletterSubscriber';
+import { validateEmail } from '@/lib/validation';
 
 export async function POST(request: NextRequest) {
   try {
+    await dbConnect();
     const { email } = await request.json();
 
-    if (!email || typeof email !== 'string') {
-      return NextResponse.json({ error: 'Valid email is required' }, { status: 400 });
+    if (!email || !validateEmail(email)) {
+      return NextResponse.json({ error: 'Valid email address is required' }, { status: 400 });
     }
 
-    const normalizedEmail = email.trim().toLowerCase();
+    const subscriber = await NewsletterSubscriber.findOneAndUpdate(
+      { email: email.toLowerCase() },
+      { subscribed: true },
+      { upsert: true, new: true }
+    );
 
-    const { data, error } = await supabase
-      .from('newsletter_subscribers')
-      .upsert(
-        {
-          email: normalizedEmail,
-          subscribed: true,
-        },
-        { onConflict: 'email' },
-      )
-      .select()
-      .single();
-
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-
-    // NOTE: Hook your email provider here to send confirmation emails.
-
-    return NextResponse.json({ success: true, subscriber: data }, { status: 201 });
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message ?? 'Unexpected error' }, { status: 500 });
+    return NextResponse.json({ message: 'Subscribed successfully', subscriber });
+  } catch (error: any) {
+    console.error('[Newsletter API] POST Error:', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
-

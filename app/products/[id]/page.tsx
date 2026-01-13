@@ -39,32 +39,32 @@ export default function ProductDetailPage() {
       try {
         // Handle both string and string[] from params
         const id = typeof params.id === 'string' ? params.id : params.id?.[0];
-        
+
         console.log('[ProductDetail] params:', params);
         console.log('[ProductDetail] Resolved ID:', id);
-        
+
         if (!id) {
           console.warn('[ProductDetail] No ID provided');
           setProduct(null);
           return;
         }
-        
+
         setLoading(true);
         const url = `/api/products/${id}`;
         console.log('[ProductDetail] Fetching from:', url);
-        
+
         const response = await fetch(url, {
           cache: 'no-store',
         });
-        
+
         console.log('[ProductDetail] Response status:', response.status);
-        
+
         if (!response.ok) {
           const errorData = await response.json();
           console.error('[ProductDetail] Error response:', errorData);
           throw new Error(errorData.error || 'Product not found');
         }
-        
+
         const data = await response.json();
         console.log('[ProductDetail] Product loaded:', data.name);
         setProduct(data);
@@ -113,7 +113,7 @@ export default function ProductDetailPage() {
   return (
     <>
       <Header />
-      
+
       <main className="min-h-screen bg-gradient-to-br from-rare-accent/5 to-white py-12">
         <div className="container mx-auto px-4 max-w-7xl">
           {/* Breadcrumb */}
@@ -146,11 +146,10 @@ export default function ProductDetailPage() {
                     <button
                       key={index}
                       onClick={() => setSelectedImage(index)}
-                      className={`flex-1 aspect-square rounded-lg overflow-hidden border-2 transition-all ${
-                        selectedImage === index
+                      className={`flex-1 aspect-square rounded-lg overflow-hidden border-2 transition-all ${selectedImage === index
                           ? 'border-rare-primary'
                           : 'border-transparent hover:border-rare-border'
-                      }`}
+                        }`}
                     >
                       <img src={img} alt={`${product.name} ${index + 1}`} className="w-full h-full object-cover" />
                     </button>
@@ -179,11 +178,10 @@ export default function ProductDetailPage() {
                   {[...Array(5)].map((_, i) => (
                     <MdStar
                       key={i}
-                      className={`w-5 h-5 ${
-                        i < Math.floor(product.rating || 0)
+                      className={`w-5 h-5 ${i < Math.floor(product.rating || 0)
                           ? 'fill-yellow-400 text-yellow-400'
                           : 'text-gray-300'
-                      }`}
+                        }`}
                     />
                   ))}
                 </div>
@@ -195,16 +193,16 @@ export default function ProductDetailPage() {
               {/* Price */}
               <div className="flex items-center gap-4">
                 <span className="font-heading text-4xl font-normal text-rare-primary">
-                  ${product.price}
+                  ₦{product.price.toLocaleString()}
                 </span>
                 {product.compare_at_price && (
                   <span className="font-body text-xl text-rare-text-light line-through">
-                    ${product.compare_at_price}
+                    ₦{product.compare_at_price.toLocaleString()}
                   </span>
                 )}
                 {product.compare_at_price && (
                   <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-medium">
-                    Save ${(product.compare_at_price - product.price).toFixed(2)}
+                    Save ₦{(product.compare_at_price - product.price).toLocaleString()}
                   </span>
                 )}
               </div>
@@ -316,7 +314,7 @@ export default function ProductDetailPage() {
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-rare-primary mt-1">✓</span>
-                    <span className="text-rare-text">Free shipping on orders over $100</span>
+                    <span className="text-rare-text">Free shipping on orders over ₦100,000</span>
                   </li>
                 </ul>
               </Card>

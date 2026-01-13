@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState } from "react";
-import { supabase, Order } from "@/lib/supabase";
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 import { MdErrorOutline, MdCheckCircle, MdRemoveRedEye } from 'react-icons/md';
 import { FiCalendar, FiUser, FiMail, FiMapPin, FiPackage } from 'react-icons/fi';
@@ -23,12 +22,16 @@ export default function OrdersContent({ initialOrders }: OrdersContentProps) {
             setError(null);
             setSuccess(null);
 
-            const { error: updateError } = await supabase
-                .from('orders')
-                .update({ status: newStatus })
-                .eq('id', orderId);
+            const response = await fetch(`/api/orders/${orderId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: newStatus }),
+            });
 
-            if (updateError) throw updateError;
+            if (!response.ok) {
+                const data = await response.json();
+                throw new Error(data.error || 'Failed to update order status');
+            }
 
             setOrders(prev => prev.map(order =>
                 order.id === orderId ? { ...order, status: newStatus } : order
@@ -50,12 +53,16 @@ export default function OrdersContent({ initialOrders }: OrdersContentProps) {
             setError(null);
             setSuccess(null);
 
-            const { error: updateError } = await supabase
-                .from('orders')
-                .update({ payment_status: newStatus })
-                .eq('id', orderId);
+            const response = await fetch(`/api/orders/${orderId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ payment_status: newStatus }),
+            });
 
-            if (updateError) throw updateError;
+            if (!response.ok) {
+                const data = await response.json();
+                throw new Error(data.error || 'Failed to update payment status');
+            }
 
             setOrders(prev => prev.map(order =>
                 order.id === orderId ? { ...order, payment_status: newStatus } : order
@@ -152,7 +159,7 @@ export default function OrdersContent({ initialOrders }: OrdersContentProps) {
                                     <tr key={order.id} className="hover:bg-white/10 transition-colors">
                                         <td className="px-6 py-4">
                                             <span className="font-mono text-xs text-rare-text-light bg-white/20 px-2 py-1 rounded">
-                                                #{order.id.slice(0, 8)}
+                                                #{order.id.slice(-8)}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 text-sm">

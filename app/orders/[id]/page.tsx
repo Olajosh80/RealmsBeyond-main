@@ -16,10 +16,10 @@ export default function OrderTrackingPage() {
     id: orderId,
     status: 'shipped',
     date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
-    estimatedDelivery: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
+    estimatedDelivery: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
     }),
     trackingNumber: 'TRK' + Date.now().toString().slice(-10),
     carrier: 'FedEx',
@@ -72,7 +72,7 @@ export default function OrderTrackingPage() {
   return (
     <>
       <Header />
-      
+
       <main className="min-h-screen bg-gradient-to-br from-rare-accent/5 to-white py-12">
         <div className="container mx-auto px-4 max-w-6xl">
           {/* Header */}
@@ -111,9 +111,8 @@ export default function OrderTrackingPage() {
                   {order.timeline.map((step, index) => (
                     <div key={step.status} className="flex gap-4">
                       <div className="flex flex-col items-center">
-                        <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                          step.completed ? 'bg-green-100' : 'bg-gray-100'
-                        }`}>
+                        <div className={`w-12 h-12 rounded-full flex items-center justify-center ${step.completed ? 'bg-green-100' : 'bg-gray-100'
+                          }`}>
                           {getStatusIcon(step.status, step.completed)}
                         </div>
                         {index < order.timeline.length - 1 && (
@@ -126,8 +125,8 @@ export default function OrderTrackingPage() {
                         </h4>
                         <p className="text-sm text-rare-text-light flex items-center gap-2">
                           <MdEvent className="w-4 h-4" />
-                          {step.date.toLocaleDateString('en-US', { 
-                            month: 'short', 
+                          {step.date.toLocaleDateString('en-US', {
+                            month: 'short',
                             day: 'numeric',
                             hour: '2-digit',
                             minute: '2-digit'
@@ -197,7 +196,7 @@ export default function OrderTrackingPage() {
                       <div className="flex-1">
                         <h4 className="font-medium text-rare-text text-sm">{item.name}</h4>
                         <p className="text-xs text-rare-text-light">Qty: {item.quantity}</p>
-                        <p className="font-semibold text-rare-primary">${item.price}</p>
+                        <p className="font-semibold text-rare-primary">₦{item.price.toLocaleString()}</p>
                       </div>
                     </div>
                   ))}
@@ -206,7 +205,7 @@ export default function OrderTrackingPage() {
                 <div className="mt-4 pt-4 border-t border-rare-border">
                   <div className="flex justify-between font-bold text-rare-primary">
                     <span>Total</span>
-                    <span>${order.total}</span>
+                    <span>₦{order.total.toLocaleString()}</span>
                   </div>
                 </div>
               </Card>

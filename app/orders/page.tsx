@@ -6,12 +6,20 @@ import { Footer } from '@/components/layout/Footer';
 import { Section } from '@/components/ui/Section';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { supabase } from '@/lib/supabase';
-import { Order } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { FiPackage, FiCalendar, FiDollarSign } from 'react-icons/fi';
 import { useAuth } from '@/contexts/AuthContext';
+
+type Order = {
+  id: string;
+  _id?: string;
+  status: string;
+  payment_status: string;
+  created_at: string;
+  total_amount: number;
+  shipping_address: string;
+};
 
 export default function OrdersPage() {
   const router = useRouter();
@@ -21,7 +29,7 @@ export default function OrdersPage() {
 
   useEffect(() => {
     if (isLoading) return;
-    
+
     if (!user) {
       router.push('/signin?returnTo=/orders');
       return;
@@ -29,13 +37,10 @@ export default function OrdersPage() {
 
     (async () => {
       try {
-        const { data: ordersData, error } = await supabase
-          .from('orders')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false });
+        const response = await fetch('/api/orders');
+        if (!response.ok) throw new Error('Failed to fetch orders');
 
-        if (error) throw error;
+        const ordersData = await response.json();
         setOrders(ordersData || []);
       } catch (error) {
         console.error('Error fetching orders:', error);
@@ -132,7 +137,7 @@ export default function OrdersPage() {
                             <div className="flex items-center gap-2 text-rare-text-light">
                               <FiDollarSign className="h-4 w-4" />
                               <span className="font-semibold text-rare-primary">
-                                ${order.total_amount.toFixed(2)}
+                                ₦{order.total_amount.toLocaleString()}
                               </span>
                             </div>
                             <div className="flex items-center gap-2 text-rare-text-light">

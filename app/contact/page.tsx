@@ -8,9 +8,11 @@ import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
 import { Button } from '@/components/ui/Button';
 import { FiMail, FiPhone, FiMapPin, FiSend, FiCheckCircle } from 'react-icons/fi';
-import { supabase } from '@/lib/supabase';
+
+import { useSiteSettings } from '@/hooks/useSiteSettings';
 
 export default function ContactPage() {
+    const { settings } = useSiteSettings();
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -34,11 +36,16 @@ export default function ContactPage() {
         setError(null);
 
         try {
-            const { error: submissionError } = await supabase
-                .from('contact_submissions')
-                .insert([formData]);
+            const response = await fetch('/api/contact', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData),
+            });
 
-            if (submissionError) throw submissionError;
+            if (!response.ok) {
+                const data = await response.json();
+                throw new Error(data.error || 'Failed to send message');
+            }
 
             setSuccess(true);
             setFormData({
@@ -63,21 +70,21 @@ export default function ContactPage() {
         {
             icon: FiMapPin,
             title: 'Our Location',
-            details: ['123 Business Avenue, Suite 100', 'New York, NY 10001'],
+            details: [settings?.address || '123 Business Avenue, Suite 100, New York, NY 10001'],
             color: 'bg-blue-50',
             iconColor: 'text-blue-600',
         },
         {
             icon: FiPhone,
             title: 'Phone Number',
-            details: ['+1 (234) 567-890', '+1 (234) 567-891'],
+            details: [settings?.contact_phone || '+1 (234) 567-890'],
             color: 'bg-rare-accent/10',
             iconColor: 'text-rare-primary',
         },
         {
             icon: FiMail,
             title: 'Email Address',
-            details: ['beyondrealmsltd@gmail.com', 'info@beyondrealms.com'],
+            details: [settings?.contact_email || 'beyondrealmsltd@gmail.com'],
             color: 'bg-green-50',
             iconColor: 'text-green-600',
         },

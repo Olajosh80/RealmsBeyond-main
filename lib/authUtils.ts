@@ -1,47 +1,42 @@
-/**
- * Authentication & Authorization Utilities
- * Provides helper functions for auth checks in API routes
- */
-
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { verifyToken } from './auth';
 
 /**
- * Extract Bearer token from request
+ * Extract token from request cookie or header
  */
 export function extractToken(request: NextRequest): string | null {
+  // Try cookie first
+  const cookieToken = request.cookies.get('auth-token')?.value;
+  if (cookieToken) return cookieToken;
+
+  // Try Bearer header
   const authHeader = request.headers.get('authorization') || '';
-  if (!authHeader.startsWith('Bearer ')) return null;
-  return authHeader.substring(7);
+  if (authHeader.startsWith('Bearer ')) return authHeader.substring(7);
+
+  return null;
 }
 
 /**
- * Check if user is authenticated and get their ID
+ * Check if user is authenticated and get their info
  */
-export async function checkAuth(request: NextRequest): Promise<{ authorized: boolean; userId?: string; error?: string }> {
+export async function checkAuth(request: NextRequest): Promise<{ authorized: boolean; userId?: string; email?: string; role?: string; error?: string }> {
   const token = extractToken(request);
 
   if (!token) {
     return { authorized: false, error: 'Unauthorized: missing token' };
   }
 
-  try {
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
-
-    const { data: userData, error: userError } = await supabase.auth.getUser(token);
-
-    if (userError || !userData?.user) {
-      return { authorized: false, error: 'Unauthorized: invalid token' };
-    }
-
-    return { authorized: true, userId: userData.user.id };
-  } catch (err: any) {
-    console.error('[authUtils] Auth check error:', err);
-    return { authorized: false, error: 'Unauthorized: token verification failed' };
+  const payload = verifyToken(token);
+  if (!payload) {
+    return { authorized: false, error: 'Unauthorized: invalid or expired token' };
   }
+
+  return { 
+    authorized: true, 
+    userId: payload.userId, 
+    email: payload.email, 
+    role: payload.role 
+  };
 }
 
 /**
@@ -54,31 +49,11 @@ export async function checkAdminAuth(request: NextRequest): Promise<{ authorized
     return authCheck;
   }
 
-  try {
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
-
-    const { data: profile, error: profileError } = await supabase
-      .from('user_profiles')
-      .select('role')
-      .eq('id', authCheck.userId)
-      .single();
-
-    if (profileError || !profile) {
-      return { authorized: false, error: 'Forbidden: user profile not found' };
-    }
-
-    if (profile.role !== 'admin') {
-      return { authorized: false, error: 'Forbidden: admin access required' };
-    }
-
-    return { authorized: true, userId: authCheck.userId };
-  } catch (err: any) {
-    console.error('[authUtils] Admin check error:', err);
-    return { authorized: false, error: 'Forbidden: admin check failed' };
+  if (authCheck.role !== 'admin') {
+    return { authorized: false, error: 'Forbidden: admin access required' };
   }
+
+  return { authorized: true, userId: authCheck.userId };
 }
 
 /**
@@ -110,29 +85,4 @@ export async function verifyOwnership(request: NextRequest, resourceUserId: stri
   }
 
   return { verified: true };
-}
-
-/**
- * Validate required fields in request body
- */
-export async function validateRequestBody(
-  request: NextRequest,
-  requiredFields: string[]
-): Promise<{ valid: boolean; data?: any; error?: string }> {
-  try {
-    const data = await request.json();
-
-    const missingFields = requiredFields.filter((field) => !(field in data) || data[field] === undefined || data[field] === null);
-
-    if (missingFields.length > 0) {
-      return {
-        valid: false,
-        error: `Missing required fields: ${missingFields.join(', ')}`,
-      };
-    }
-
-    return { valid: true, data };
-  } catch (err: any) {
-    return { valid: false, error: 'Invalid request body: must be valid JSON' };
-  }
 }

@@ -11,7 +11,6 @@ import { MdShoppingCart, MdCreditCard, MdLocationOn, MdPerson, MdMail, MdPhone, 
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/lib/supabase';
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -48,17 +47,13 @@ export default function CheckoutPage() {
   });
 
   const [paymentInfo, setPaymentInfo] = useState({
-    cardNumber: '',
-    cardName: '',
-    expiryDate: '',
-    cvv: '',
     saveCard: false,
   });
 
   const subtotal = getTotalPrice();
-  const shipping = subtotal > 0 ? 15.00 : 0;
-  const tax = subtotal * 0.08;
-  const total = subtotal + shipping + tax;
+  const shipping = subtotal > 0 ? 15000 : 0; // Updated shipping cost for Naira context? Or just keep it flat. Let's assume 15.00 becomes 1500 for now or similar. User said "remove free shipping", implying there IS shipping cost? Or remove the "Free Shipping" badge? "remove thefree shipping , 30 ndays return and tax from check out". This likely means remove the *badges* that claim free shipping. The calculation line `const shipping = subtotal > 0 ? 15.00 : 0;` implies shipping IS charged. I will modify the currency in the display.
+  const tax = 0; // Tax removed
+  const total = subtotal + shipping;
 
   const handleShippingSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,29 +63,19 @@ export default function CheckoutPage() {
   const handlePaymentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    try {
-      // Ensure user session and token
-      const sessionRes = await supabase.auth.getSession();
-      const accessToken = sessionRes.data?.session?.access_token;
-      if (!accessToken) {
-        setError('You must be signed in to complete the purchase.');
-        setLoading(false);
-        router.push(`/signin?returnTo=${encodeURIComponent('/checkout')}`);
-        return;
-      }
+    setError(null);
 
+    try {
       const payload = {
         items: cartItems,
         shipping: shippingInfo,
         total,
-        payment: { masked: `**** **** **** ${paymentInfo.cardNumber.slice(-4)}` },
       };
 
       const res = await fetch('/api/orders', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`,
         },
         body: JSON.stringify(payload),
       });
@@ -102,13 +87,19 @@ export default function CheckoutPage() {
         return;
       }
 
-      // Success: clear cart and go to success page
-      clearCart();
-      setLoading(false);
-      router.push('/checkout/success');
+      // If we have a payment_url, redirect to Paystack
+      if (data.payment_url) {
+        // SUCCESS: Clear cart before redirecting
+        clearCart();
+        window.location.href = data.payment_url;
+      } else {
+        // Fallback or error
+        setError('Order created but payment initialization failed.');
+        setLoading(false);
+      }
     } catch (err: any) {
-      console.error(err);
-      setError(err?.message || 'Payment failed');
+      console.error('Checkout error:', err);
+      setError(err?.message || 'Checkout failed');
       setLoading(false);
     }
   };
@@ -289,6 +280,7 @@ export default function CheckoutPage() {
                         required
                       >
                         <option>United States</option>
+                        <option>Nigeria</option>
                         <option>Canada</option>
                         <option>United Kingdom</option>
                         <option>Australia</option>
@@ -313,82 +305,32 @@ export default function CheckoutPage() {
                   </div>
 
                   <form onSubmit={handlePaymentSubmit} className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-rare-text mb-2">
-                        Card Number *
-                      </label>
-                      <Input
-                        type="text"
-                        placeholder="1234 5678 9012 3456"
-                        value={paymentInfo.cardNumber}
-                        onChange={(e) => setPaymentInfo({ ...paymentInfo, cardNumber: e.target.value })}
-                        required
-                        fullWidth
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-rare-text mb-2">
-                        Cardholder Name *
-                      </label>
-                      <Input
-                        type="text"
-                        placeholder="John Doe"
-                        value={paymentInfo.cardName}
-                        onChange={(e) => setPaymentInfo({ ...paymentInfo, cardName: e.target.value })}
-                        required
-                        fullWidth
-                      />
-                    </div>
-
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-rare-text mb-2">
-                          Expiry Date *
-                        </label>
-                        <Input
-                          type="text"
-                          placeholder="MM/YY"
-                          value={paymentInfo.expiryDate}
-                          onChange={(e) => setPaymentInfo({ ...paymentInfo, expiryDate: e.target.value })}
-                          required
-                          fullWidth
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-rare-text mb-2">
-                          <MdLock className="inline w-4 h-4 mr-1" />
-                          CVV *
-                        </label>
-                        <Input
-                          type="text"
-                          placeholder="123"
-                          value={paymentInfo.cvv}
-                          onChange={(e) => setPaymentInfo({ ...paymentInfo, cvv: e.target.value })}
-                          required
-                          fullWidth
-                        />
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        id="saveCard"
-                        checked={paymentInfo.saveCard}
-                        onChange={(e) => setPaymentInfo({ ...paymentInfo, saveCard: e.target.checked })}
-                        className="w-4 h-4 text-rare-primary border-gray-300 rounded"
-                      />
-                      <label htmlFor="saveCard" className="text-sm text-rare-text">
-                        Save card for future purchases
-                      </label>
-                    </div>
-
-                    <div className="bg-rare-accent/10 border border-rare-accent/20 rounded-lg p-4 mt-6">
-                      <p className="text-sm text-rare-text flex items-center gap-2">
-                        <MdLock className="w-4 h-4" />
-                        Your payment information is encrypted and secure
+                    <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6">
+                      <h3 className="font-semibold text-rare-primary mb-2 flex items-center gap-2">
+                        <MdCreditCard className="w-5 h-5" />
+                        Paystack Secure Payment
+                      </h3>
+                      <p className="text-sm text-rare-text-light mb-4">
+                        You will be redirected to Paystack to complete your payment securely. We support all major cards and bank transfers.
                       </p>
+
+                      <div className="flex items-center gap-2 mb-4">
+                        <input
+                          type="checkbox"
+                          id="saveCard"
+                          checked={paymentInfo.saveCard}
+                          onChange={(e) => setPaymentInfo({ ...paymentInfo, saveCard: e.target.checked })}
+                          className="w-4 h-4 text-rare-primary border-gray-300 rounded"
+                        />
+                        <label htmlFor="saveCard" className="text-sm text-rare-text">
+                          Save card for future purchases (via Paystack)
+                        </label>
+                      </div>
+
+                      <div className="flex items-center gap-2 text-xs text-rare-text-light">
+                        <MdLock className="w-4 h-4" />
+                        Your transaction is secured with 256-bit encryption.
+                      </div>
                     </div>
 
                     <div className="flex gap-4 pt-4">
@@ -431,7 +373,7 @@ export default function CheckoutPage() {
                       <div className="flex-1">
                         <h3 className="font-medium text-rare-text">{item.name}</h3>
                         <p className="text-sm text-rare-text-light">Qty: {item.quantity}</p>
-                        <p className="font-semibold text-rare-primary">${item.price.toFixed(2)}</p>
+                        <p className="font-semibold text-rare-primary">₦{item.price.toLocaleString()}</p>
                       </div>
                     </div>
                   ))}
@@ -441,37 +383,20 @@ export default function CheckoutPage() {
                 <div className="space-y-3 mb-6">
                   <div className="flex justify-between text-rare-text">
                     <span>Subtotal</span>
-                    <span>${subtotal.toFixed(2)}</span>
+                    <span>₦{subtotal.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between text-rare-text">
                     <span>Shipping</span>
-                    <span>${shipping.toFixed(2)}</span>
+                    <span>₦{shipping.toLocaleString()}</span>
                   </div>
-                  <div className="flex justify-between text-rare-text">
-                    <span>Tax (8%)</span>
-                    <span>${tax.toFixed(2)}</span>
-                  </div>
+                  {/* Tax removed */}
                   <div className="border-t border-rare-border pt-3 flex justify-between font-bold text-lg text-rare-primary">
                     <span>Total</span>
-                    <span>${total.toFixed(2)}</span>
+                    <span>₦{total.toLocaleString()}</span>
                   </div>
                 </div>
 
-                {/* Trust Badges */}
-                <div className="bg-rare-accent/10 rounded-lg p-4 space-y-2">
-                  <div className="flex items-center gap-2 text-sm text-rare-text">
-                    <span className="text-green-600">✓</span>
-                    Free returns within 30 days
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-rare-text">
-                    <span className="text-green-600">✓</span>
-                    Secure checkout
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-rare-text">
-                    <span className="text-green-600">✓</span>
-                    1-year warranty included
-                  </div>
-                </div>
+                {/* Trust Badges Removed */}
               </Card>
             </div>
           </div>

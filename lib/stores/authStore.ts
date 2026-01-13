@@ -2,7 +2,6 @@
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { User } from '@supabase/supabase-js';
 
 export interface UserProfile {
   id: string;
@@ -15,11 +14,11 @@ export interface UserProfile {
 }
 
 interface AuthState {
-  user: User | null;
+  user: any | null; // Generic user object
   profile: UserProfile | null;
   isLoading: boolean;
   isAdmin: boolean;
-  setUser: (user: User | null) => void;
+  setUser: (user: any | null) => void;
   setProfile: (profile: UserProfile | null) => void;
   setIsLoading: (loading: boolean) => void;
   clearAuth: () => void;

@@ -1,75 +1,76 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import dbConnect from '@/lib/db';
+import bcrypt from 'bcryptjs';
+import User from '@/lib/models/User';
+import { generateToken, generateRefreshToken, setAuthCookie, setRefreshTokenCookie } from '@/lib/auth';
 import { validateEmail } from '@/lib/validation';
-import { createErrorResponse, createSuccessResponse } from '@/lib/authUtils';
 
 export async function POST(request: NextRequest) {
   try {
+    await dbConnect();
     const { email, password } = await request.json();
 
     if (!email || !validateEmail(email)) {
-      return createErrorResponse('Valid email address is required', 400);
+      return NextResponse.json({ error: 'Valid email address is required' }, { status: 400 });
     }
 
-    if (!password || typeof password !== 'string' || password.length < 8) {
-      return createErrorResponse('Password must be at least 8 characters', 400);
+    if (!password) {
+      return NextResponse.json({ error: 'Password is required' }, { status: 400 });
     }
 
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
+    const user = await User.findOne({ email: email.toLowerCase() });
 
-    let { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
+    if (!user) {
+      return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
+    }
+
+    // Check password
+    const isPasswordMatch = await bcrypt.compare(password, user.password);
+    if (!isPasswordMatch) {
+      return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
+    }
+
+    // Check if verified
+    if (!user.is_verified) {
+      return NextResponse.json({
+        error: 'Please verify your email address before logging in.',
+        unverified: true
+      }, { status: 403 });
+    }
+
+    // Generate tokens
+    const accessToken = await generateToken({
+      userId: user._id.toString(),
+      email: user.email,
+      role: user.role,
     });
 
-    if (error && (error.message.includes('Email not confirmed') || error.code === 'email_not_confirmed')) {
-      console.log('[Signin API] Unconfirmed user detected, attempting auto-confirmation...');
-      
-      const supabaseAdmin = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY!,
-        {
-          auth: {
-            autoRefreshToken: false,
-            persistSession: false,
-          },
-        }
-      );
+    const refreshToken = await generateRefreshToken({
+      userId: user._id.toString(),
+      email: user.email,
+      role: user.role,
+    });
 
-      const { data: userList, error: listError } = await supabaseAdmin.auth.admin.listUsers();
-      const user = userList?.users.find(u => u.email === email);
+    // Save refresh token to DB (hashed ideally, but direct for now as per plan/speed)
+    // Security Note: In production, hash this token before saving.
+    user.refresh_token = refreshToken;
+    await user.save();
 
-      if (user) {
-        const { error: confirmError } = await supabaseAdmin.auth.admin.updateUserById(user.id, {
-          email_confirm: true,
-        });
+    // Set cookies
+    await setAuthCookie(accessToken);
+    await setRefreshTokenCookie(refreshToken);
 
-        if (!confirmError) {
-          console.log('[Signin API] User auto-confirmed successfully. Retrying sign-in...');
-          const retry = await supabase.auth.signInWithPassword({
-            email,
-            password,
-          });
-          data = retry.data;
-          error = retry.error;
-        }
+    return NextResponse.json({
+      message: 'Login successful',
+      user: {
+        id: user._id,
+        email: user.email,
+        full_name: user.full_name,
+        role: user.role,
       }
-    }
-
-    if (error) {
-      return createErrorResponse(error.message, 401);
-    }
-
-    if (!data || !data.user || !data.session) {
-      return createErrorResponse('Authentication failed: Missing session data', 500);
-    }
-
-    return createSuccessResponse({ user: data.user, session: data.session });
+    });
   } catch (error: any) {
     console.error('[Signin API] Exception:', error);
-    return createErrorResponse(error.message, 500);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

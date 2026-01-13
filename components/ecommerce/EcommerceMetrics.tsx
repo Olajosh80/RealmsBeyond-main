@@ -2,77 +2,56 @@
 import React, { useEffect, useState } from "react";
 import Badge from "../ui/badge/Badge";
 import { FaUsers, FaShoppingCart, FaMoneyBillWave, FaChartLine, FaSpinner } from "react-icons/fa";
-import { supabase } from "@/lib/supabase";
 
 export const EcommerceMetrics = () => {
   const [metrics, setMetrics] = useState([
-    { title: "Customers", value: "0", trend: "up", percent: "0%", icon: <FaUsers className="text-white text-2xl" />, color: "bg-blue-500" },
-    { title: "Orders", value: "0", trend: "up", percent: "0%", icon: <FaShoppingCart className="text-white text-2xl" />, color: "bg-green-500" },
-    { title: "Revenue", value: "$0", trend: "up", percent: "0%", icon: <FaMoneyBillWave className="text-white text-2xl" />, color: "bg-purple-500" },
-    { title: "Products", value: "0", trend: "up", percent: "0%", icon: <FaChartLine className="text-white text-2xl" />, color: "bg-yellow-500" },
+    { title: "Customers", value: "0", trend: "up", percent: "0%", icon: <FaUsers />, color: "bg-rare-secondary" },
+    { title: "Orders", value: "0", trend: "up", percent: "0%", icon: <FaShoppingCart />, color: "bg-rare-primary" },
+    { title: "Revenue", value: "$0", trend: "up", percent: "0%", icon: <FaMoneyBillWave />, color: "bg-emerald-600" },
+    { title: "Products", value: "0", trend: "up", percent: "0%", icon: <FaChartLine />, color: "bg-amber-500" },
   ]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchMetrics = async () => {
       try {
-        // Fetch users count
-        const { count: usersCount } = await supabase
-          .from('user_profiles')
-          .select('*', { count: 'exact', head: true });
+        const response = await fetch('/api/admin/metrics');
+        if (!response.ok) throw new Error('Failed to fetch metrics');
 
-        // Fetch orders count and total revenue
-        const { data: ordersData, count: ordersCount } = await supabase
-          .from('orders')
-          .select('total_amount, created_at', { count: 'exact' });
-
-        const totalRevenue = ordersData?.reduce((sum, order) => sum + parseFloat(order.total_amount || '0'), 0) || 0;
-        const thisMonthRevenue = ordersData?.filter(order => {
-          const orderDate = new Date(order.created_at);
-          const now = new Date();
-          return orderDate.getMonth() === now.getMonth() && orderDate.getFullYear() === now.getFullYear();
-        }).reduce((sum, order) => sum + parseFloat(order.total_amount || '0'), 0) || 0;
-
-        // Fetch products count
-        const { count: productsCount } = await supabase
-          .from('products')
-          .select('*', { count: 'exact', head: true });
-
-        // Calculate growth percentage (simplified - comparing this month to last month)
-        const revenueGrowth = totalRevenue > 0 ? ((thisMonthRevenue / totalRevenue) * 100).toFixed(1) : '0';
+        const data = await response.json();
 
         setMetrics([
           {
             title: "Customers",
-            value: usersCount?.toLocaleString() || "0",
+            value: data.customers?.toLocaleString() || "0",
             trend: "up",
             percent: "0%",
-            icon: <FaUsers className="text-white text-2xl" />,
-            color: "bg-blue-500",
+            icon: <FaUsers />,
+            color: "bg-rare-secondary", // Slate Blue
           },
           {
             title: "Orders",
-            value: ordersCount?.toLocaleString() || "0",
+            value: data.orders?.toLocaleString() || "0",
             trend: "up",
             percent: "0%",
-            icon: <FaShoppingCart className="text-white text-2xl" />,
-            color: "bg-green-500",
+            icon: <FaShoppingCart />,
+            color: "bg-rare-primary", // Midnight Blue
           },
           {
             title: "Revenue",
-            value: `$${totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-            trend: revenueGrowth !== '0' ? "up" : "up",
-            percent: `${revenueGrowth}%`,
-            icon: <FaMoneyBillWave className="text-white text-2xl" />,
-            color: "bg-purple-500",
+            value: `$${(data.revenue || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+            trend: "up",
+            percent: data.revenueGrowth || '0%',
+            icon: <FaMoneyBillWave />,
+            color: "bg-emerald-600",
           },
           {
             title: "Products",
-            value: productsCount?.toLocaleString() || "0",
+            value: data.products?.toLocaleString() || "0",
             trend: "up",
             percent: "0%",
-            icon: <FaChartLine className="text-white text-2xl" />,
-            color: "bg-yellow-500",
+            icon: <FaChartLine />,
+            color: "bg-amber-500", // Gold-ish
           },
         ]);
       } catch (error) {
@@ -103,32 +82,36 @@ export const EcommerceMetrics = () => {
   }
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4 md:gap-6">
+    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
       {metrics.map((metric) => (
         <div
           key={metric.title}
-          className="relative overflow-hidden rounded-2xl p-5 shadow-md hover:shadow-lg transition-shadow bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800"
+          className="group relative overflow-hidden rounded-2xl p-6 bg-white/60 backdrop-blur-md border border-white/40 shadow-xl shadow-rare-primary/5 hover:-translate-y-1 hover:shadow-2xl hover:shadow-rare-primary/10 transition-all duration-300"
         >
-          {/* Icon */}
-          <div className={`flex items-center justify-center w-12 h-12 rounded-xl ${metric.color} mb-4`}>
-            {metric.icon}
-          </div>
+          <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
-          {/* Metric */}
-          <div className="flex items-end justify-between">
-            <div>
-              <span className="text-sm text-gray-500 dark:text-gray-400">{metric.title}</span>
-              <h4 className="mt-1 text-xl font-bold text-gray-800 dark:text-white/90">{metric.value}</h4>
+          <div className="relative z-10">
+            <div className="flex justify-between items-start mb-4">
+              <div className={`p-3 rounded-xl ${metric.color} text-white shadow-lg shadow-current/20 group-hover:scale-110 transition-transform duration-300`}>
+                {React.cloneElement(metric.icon as React.ReactElement, { className: "text-lg" })}
+              </div>
+              {/* Badge */}
+              <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold ${metric.trend === "up"
+                ? "bg-green-100/80 text-green-700 border border-green-200"
+                : "bg-red-100/80 text-red-700 border border-red-200"
+                }`}>
+                {metric.trend === "up" ? "▲" : "▼"} {metric.percent}
+              </span>
             </div>
 
-            {/* Badge */}
-            <Badge color={metric.trend === "up" ? "success" : "error"}>
-              {metric.trend === "up" ? "▲" : "▼"} {metric.percent}
-            </Badge>
+            <div>
+              <h3 className="text-sm font-heading font-medium text-rare-text-light uppercase tracking-wider mb-1">{metric.title}</h3>
+              <p className="text-3xl font-body font-bold text-rare-primary tracking-tight">{metric.value}</p>
+            </div>
           </div>
 
-          {/* Optional hover effect */}
-          <div className="absolute -top-5 -right-5 w-20 h-20 rounded-full opacity-10 bg-gradient-to-tr from-blue-400 to-purple-400"></div>
+          {/* Decorative blob */}
+          <div className={`absolute -bottom-4 -right-4 w-24 h-24 rounded-full ${metric.color} opacity-5 blur-2xl group-hover:opacity-10 transition-opacity duration-500`} />
         </div>
       ))}
     </div>

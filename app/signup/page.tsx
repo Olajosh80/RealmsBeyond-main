@@ -4,7 +4,9 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { MdOutlineRemoveRedEye } from 'react-icons/md';
 import { RiEyeCloseLine } from 'react-icons/ri';
-import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/contexts/AuthContext';
+import { useAuthStore } from '@/lib/stores/authStore';
+import { Loader } from '@/components/ui/Loader';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { Section } from '@/components/ui/Section';
@@ -13,7 +15,9 @@ import { Input } from '@/components/ui/Input';
 
 export default function SignUpPage() {
   const router = useRouter();
+  const { user, isLoading } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
@@ -21,6 +25,7 @@ export default function SignUpPage() {
     name: '',
     email: '',
     password: '',
+    confirm_password: '',
     agree: false,
   });
 
@@ -48,6 +53,7 @@ export default function SignUpPage() {
         body: JSON.stringify({
           email: form.email,
           password: form.password,
+          confirm_password: form.confirm_password,
           full_name: form.name,
         }),
       });
@@ -61,7 +67,7 @@ export default function SignUpPage() {
       console.log('[Sign Up] Account created successfully:', result.user?.id);
       setSuccess(true);
       setTimeout(() => {
-        router.push('/signin');
+        router.push('/verify-email');
       }, 2000);
     } catch (err: any) {
       console.error('[Sign Up] Error:', err);
@@ -70,6 +76,14 @@ export default function SignUpPage() {
       setLoading(false);
     }
   };
+
+
+
+
+
+  if (user || isLoading) {
+    return <Loader fullScreen />;
+  }
 
   return (
     <>
@@ -150,6 +164,32 @@ export default function SignUpPage() {
                   </div>
                 </div>
 
+                {/* Confirm Password */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-body font-medium text-rare-text">
+                    Confirm Password
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showConfirmPassword ? 'text' : 'password'}
+                      name="confirm_password"
+                      value={form.confirm_password}
+                      onChange={handleChange}
+                      required
+                      placeholder="Re-enter your password"
+                      className="w-full px-4 py-3 border border-rare-border rounded-lg font-body text-rare-text placeholder:text-rare-text-light/50 focus:outline-none focus:ring-2 focus:ring-rare-primary focus:border-transparent transition-all"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-rare-text-light hover:text-rare-primary transition-colors"
+                      aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                    >
+                      {showConfirmPassword ? <RiEyeCloseLine size={20} /> : <MdOutlineRemoveRedEye size={20} />}
+                    </button>
+                  </div>
+                </div>
+
                 {/* Agree to terms */}
                 <label className="flex items-center text-rare-text text-sm cursor-pointer group">
                   <input
@@ -181,10 +221,10 @@ export default function SignUpPage() {
                 <p className="text-sm text-rare-text-light">
                   Already have an account?
                 </p>
-                <Button 
-                  href="/signin" 
-                  variant="outline" 
-                  fullWidth 
+                <Button
+                  href="/signin"
+                  variant="outline"
+                  fullWidth
                   className="py-3"
                 >
                   Sign In

@@ -1,86 +1,106 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import dbConnect from '@/lib/db';
+import User from '@/lib/models/User';
+import bcrypt from 'bcryptjs';
+import { getAuthUser } from '@/lib/auth';
 
-// GET single user profile
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = await params;
-    console.log('[API] GET /api/users/:id - Fetching profile for user:', id);
-    
-    const { data, error } = await supabase
-      .from('user_profiles')
-      .select('*')
-      .eq('id', id)
-      .maybeSingle();
-
-    if (error) {
-      console.error('[API] Error fetching user profile:', error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+    await dbConnect();
+    const authUser = await getAuthUser();
+    if (!authUser) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    if (!data) {
-      console.warn('[API] User profile not found for ID:', id);
-      return NextResponse.json({ error: 'User profile not found' }, { status: 404 });
+    const { id } = params;
+
+    const user = await User.findById(id).select('-password').lean();
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    console.log('[API] User profile found:', { id: data.id, role: data.role });
-    return NextResponse.json(data);
-  } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
-    console.error('[API] Exception in GET user profile:', error);
-    return NextResponse.json({ error: message }, { status: 500 });
+    // Check ownership or admin
+    if (user._id.toString() !== authUser.userId && authUser.role !== 'admin') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    return NextResponse.json(user);
+  } catch (error: any) {
+    console.error('[User Detail API] GET Error:', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
 
-// PUT - Update user profile
-export async function PUT(
+export async function PATCH(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = await params;
+    await dbConnect();
+    const authUser = await getAuthUser();
+    if (!authUser) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { id } = params;
     const body = await request.json();
 
-    const { data, error } = await supabase
-      .from('user_profiles')
-      .update(body)
-      .eq('id', id)
-      .select()
-      .single();
-
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+    // Only allow updating certain fields for users themselves
+    // Admins can update more (like role)
+    if (authUser.role !== 'admin' && authUser.userId !== id) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    return NextResponse.json(data);
-  } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
-    return NextResponse.json({ error: message }, { status: 500 });
+    // Prevent non-admins from changing roles
+    if (authUser.role !== 'admin' && body.role) {
+      delete body.role;
+    }
+
+    // Hash password if being updated
+    if (body.password) {
+      if (body.password.length < 6) {
+        return NextResponse.json({ error: 'Password must be at least 6 characters' }, { status: 400 });
+      }
+      const hashedPassword = await bcrypt.hash(body.password, 12);
+      body.password = hashedPassword;
+    }
+
+    const user = await User.findByIdAndUpdate(id, body, { new: true }).select('-password');
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    return NextResponse.json(user);
+  } catch (error: any) {
+    console.error('[User Detail API] PATCH Error:', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
 
-// DELETE user (admin only)
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = await params;
-    const { error } = await supabase
-      .from('user_profiles')
-      .delete()
-      .eq('id', id);
+    await dbConnect();
+    const authUser = await getAuthUser();
+    if (!authUser || authUser.role !== 'admin') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+    const { id } = params;
+
+    const user = await User.findByIdAndDelete(id);
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
     return NextResponse.json({ message: 'User deleted successfully' });
-  } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
-    return NextResponse.json({ error: message }, { status: 500 });
+  } catch (error: any) {
+    console.error('[User Detail API] DELETE Error:', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

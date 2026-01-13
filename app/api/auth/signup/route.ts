@@ -1,78 +1,64 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import dbConnect from '@/lib/db';
+import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
+import User from '@/lib/models/User';
 import { validateSignupData } from '@/lib/validation';
-import { createErrorResponse, createSuccessResponse } from '@/lib/authUtils';
+import { sendVerificationEmail } from '@/lib/email';
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, password, full_name } = await request.json();
+    await dbConnect();
+    const body = await request.json();
+    const { email, password, confirm_password, full_name } = body;
 
     // Validate input
-    const validation = validateSignupData({ email, password, full_name });
+    const validation = validateSignupData({ email, password, confirm_password, full_name });
     if (!validation.valid) {
-      return createErrorResponse(validation.errors.join('; '), 400);
+      return NextResponse.json({ error: validation.errors.join('; ') }, { status: 400 });
     }
 
-    // Create a Supabase admin client using the service role key
-    // This allows us to auto-confirm the user
-    const supabaseAdmin = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!,
-      {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false,
-        },
-      }
-    );
+    // Check if user already exists
+    const existingUser = await User.findOne({ email: email.toLowerCase() });
+    if (existingUser) {
+      return NextResponse.json({ error: 'User already exists' }, { status: 400 });
+    }
 
-    // Sign up the user using the admin API to bypass email confirmation
-    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
-      email,
-      password,
-      email_confirm: true, // AUTO-CONFIRM user
-      user_metadata: {
-        full_name: full_name?.trim() || '',
-      },
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 12);
+
+    // Generate verification token
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+
+    // Create user
+    const user = await User.create({
+      email: email.toLowerCase(),
+      password: hashedPassword,
+      full_name: full_name?.trim(),
+      role: 'user',
+      is_verified: false,
+      verification_token: verificationToken,
+      verification_token_expires: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
+      last_verification_sent_at: new Date(),
     });
 
-    if (authError) {
-      // If user already exists, it might be unconfirmed. 
-      // We can try to update it to confirm it, but only if we want to allow "claiming" accounts.
-      // For now, just return the error but with more detail if possible.
-      console.error('[Signup API] Auth Error:', authError);
-      return createErrorResponse(authError.message, 400);
+    // Send verification email
+    try {
+      await sendVerificationEmail(user.email, verificationToken, user.full_name || user.email);
+    } catch (emailError) {
+      console.error('Failed to send verification email:', emailError);
+      // We still created the user, they can try to resend or we can handle it
     }
 
-    // Explicitly update the user to set confirmed_at just in case email_confirm: true is being ignored
-    if (authData.user) {
-      await supabaseAdmin.auth.admin.updateUserById(authData.user.id, {
-        email_confirm: true,
-      });
-    }
-
-    // Create user profile
-    if (authData.user) {
-      const { error: profileError } = await supabaseAdmin
-        .from('user_profiles')
-        .insert([
-          {
-            id: authData.user.id,
-            full_name: full_name?.trim() || '',
-            role: 'user',
-          },
-        ]);
-
-      if (profileError) {
-        console.error('Profile creation error:', profileError);
-      }
-    }
-
-    return createSuccessResponse(
-      { user: authData.user },
-      201
+    return NextResponse.json(
+      {
+        message: 'Signup successful. Please check your email to verify your account.',
+        userId: user._id
+      },
+      { status: 201 }
     );
   } catch (error: any) {
-    return createErrorResponse(error.message, 500);
+    console.error('[Signup API] Exception:', error);
+    return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
   }
 }

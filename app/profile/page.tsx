@@ -8,8 +8,6 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/lib/supabase';
-import { UserProfile } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 import { FiUser, FiMail, FiPhone, FiMapPin, FiEdit2, FiCheck, FiX } from 'react-icons/fi';
 
@@ -25,6 +23,8 @@ export default function ProfilePage() {
     full_name: '',
     phone: '',
     address: '',
+    password: '',
+    confirm_password: '',
   });
 
   useEffect(() => {
@@ -40,6 +40,8 @@ export default function ProfilePage() {
         full_name: profile.full_name || '',
         phone: profile.phone || '',
         address: profile.address || '',
+        password: '',
+        confirm_password: '',
       });
       setLoading(false);
     } else {
@@ -60,22 +62,36 @@ export default function ProfilePage() {
 
   const handleSave = async () => {
     if (!user) return;
-    
+
     setUpdating(true);
     setError('');
     setSuccess('');
 
     try {
-      const { error: updateError } = await supabase
-        .from('user_profiles')
-        .update({
+      if (!profile?.id) throw new Error('Profile ID not found');
+
+
+      // Validate password if provided
+      if (formData.password) {
+        if (formData.password.length < 6) throw new Error('Password must be at least 6 characters');
+        if (formData.password !== formData.confirm_password) throw new Error('Passwords do not match');
+      }
+
+      const response = await fetch(`/api/users/${profile.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           full_name: formData.full_name,
           phone: formData.phone,
           address: formData.address,
-        })
-        .eq('id', user.id);
+          ...(formData.password ? { password: formData.password } : {}),
+        }),
+      });
 
-      if (updateError) throw updateError;
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update profile');
+      }
 
       // Refresh global auth state to pick up changes
       await refreshAuth();
@@ -98,6 +114,8 @@ export default function ProfilePage() {
       full_name: profile?.full_name || '',
       phone: profile?.phone || '',
       address: profile?.address || '',
+      password: '',
+      confirm_password: '',
     });
   };
 
@@ -255,6 +273,30 @@ export default function ProfilePage() {
                       placeholder="Your phone number"
                       fullWidth
                     />
+
+                    <div className="pt-4 pb-2 border-t border-rare-border/50">
+                      <h3 className="text-sm font-heading text-rare-primary mb-4">Change Password (Optional)</h3>
+                      <div className="space-y-4">
+                        <Input
+                          label="New Password"
+                          type="password"
+                          name="password"
+                          value={formData.password}
+                          onChange={handleInputChange}
+                          placeholder="Leave blank to keep current"
+                          fullWidth
+                        />
+                        <Input
+                          label="Confirm New Password"
+                          type="password"
+                          name="confirm_password"
+                          value={formData.confirm_password}
+                          onChange={handleInputChange}
+                          placeholder="Confirm new password"
+                          fullWidth
+                        />
+                      </div>
+                    </div>
 
                     <div>
                       <label className="block text-sm font-body font-medium text-rare-text mb-2">

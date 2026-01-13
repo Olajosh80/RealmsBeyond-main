@@ -97,7 +97,7 @@ export default function CartPage() {
                                                 </div>
 
                                                 <p className="font-body text-lg font-semibold text-rare-primary mb-4">
-                                                    ${item.price.toFixed(2)}
+                                                    ₦{item.price.toLocaleString()}
                                                 </p>
 
                                                 {/* Quantity Controls */}
@@ -122,7 +122,7 @@ export default function CartPage() {
                                                         </button>
                                                     </div>
                                                     <span className="font-body text-sm text-rare-text-light">
-                                                        Subtotal: <span className="text-rare-primary font-semibold">${(item.price * item.quantity).toFixed(2)}</span>
+                                                        Subtotal: <span className="text-rare-primary font-semibold">₦{(item.price * item.quantity).toLocaleString()}</span>
                                                     </span>
                                                 </div>
                                             </div>
@@ -157,17 +157,17 @@ export default function CartPage() {
                                     <div className="space-y-4 mb-6">
                                         <div className="flex justify-between text-rare-text">
                                             <span className="font-body">Subtotal ({getTotalItems()} items)</span>
-                                            <span className="font-semibold">${subtotal.toFixed(2)}</span>
+                                            <span className="font-semibold">₦{subtotal.toLocaleString()}</span>
                                         </div>
                                         <div className="flex justify-between text-rare-text">
                                             <span className="font-body">Estimated Tax (8%)</span>
-                                            <span className="font-semibold">${tax.toFixed(2)}</span>
+                                            <span className="font-semibold">₦{tax.toLocaleString()}</span>
                                         </div>
                                         <div className="border-t border-rare-border pt-4">
                                             <div className="flex justify-between">
                                                 <span className="font-heading text-lg font-normal text-rare-primary">Total</span>
                                                 <span className="font-heading text-2xl font-normal text-rare-primary">
-                                                    ${total.toFixed(2)}
+                                                    ₦{total.toLocaleString()}
                                                 </span>
                                             </div>
                                         </div>

@@ -59,6 +59,10 @@ export const validateSignupData = (data: any) => {
     errors.push(...passwordValidation.errors);
   }
 
+  if (data.password !== data.confirm_password) {
+    errors.push('Passwords do not match');
+  }
+
   if (!data.full_name || typeof data.full_name !== 'string' || data.full_name.trim().length === 0) {
     errors.push('Full name is required');
   }

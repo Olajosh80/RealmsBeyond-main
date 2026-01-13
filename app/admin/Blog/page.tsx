@@ -1,6 +1,5 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabase";
 import { uploadImage } from "@/lib/storage";
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 import { MdErrorOutline, MdCheckCircle } from 'react-icons/md';
@@ -23,21 +22,19 @@ export default function BlogAdminPage() {
   const [preview, setPreview] = useState<string>("");
   const [uploading, setUploading] = useState(false);
 
-  // Fetch blog posts
+  // Fetch blog posts from API
   const fetchBlogs = async () => {
     try {
       setLoading(true);
       setError(null);
-      const { data, error: fetchError } = await supabase
-        .from('blog_posts')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (fetchError) throw fetchError;
+      const response = await fetch('/api/blog');
+      if (!response.ok) throw new Error('Failed to fetch blogs');
+      
+      const data = await response.json();
       setBlogs(data || []);
     } catch (err: any) {
       console.error('Error fetching blogs:', err);
-      setError(err.message || 'Failed to load blog posts. Please try again.');
+      setError(err.message || 'Failed to load blogs. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -67,7 +64,7 @@ export default function BlogAdminPage() {
 
   const handleAddBlog = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    setSubmitting(true);
 
     try {
       const blogData = {
@@ -83,23 +80,27 @@ export default function BlogAdminPage() {
         published_at: form.status === 'published' ? new Date().toISOString() : null,
       };
 
-      const { data, error } = await supabase
-        .from('blog_posts')
-        .insert([blogData])
-        .select()
-        .single();
+      const response = await fetch('/api/blog', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(blogData),
+      });
 
-      if (error) throw error;
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to add blog post');
+      }
 
       await fetchBlogs();
       setForm({ title: "", category: "", excerpt: "", content: "", author: "", image: "", status: "draft" });
       setPreview("");
-      alert('Blog post added successfully!');
+      setSuccess('Blog post added successfully!');
+      setTimeout(() => setSuccess(null), 3000);
     } catch (error: any) {
       console.error('Error adding blog:', error);
-      alert('Failed to add blog post: ' + error.message);
+      setError('Failed to add blog post: ' + error.message);
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
@@ -107,17 +108,21 @@ export default function BlogAdminPage() {
     if (!confirm('Are you sure you want to delete this blog post?')) return;
 
     try {
-      const { error } = await supabase
-        .from('blog_posts')
-        .delete()
-        .eq('id', id);
+      const response = await fetch(`/api/blog/${id}`, {
+        method: 'DELETE',
+      });
 
-      if (error) throw error;
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to delete blog post');
+      }
       
       await fetchBlogs();
+      setSuccess('Blog post deleted successfully!');
+      setTimeout(() => setSuccess(null), 3000);
     } catch (error: any) {
       console.error('Error deleting blog:', error);
-      alert('Failed to delete blog post: ' + error.message);
+      setError('Failed to delete blog post: ' + error.message);
     }
   };
 
@@ -280,7 +285,7 @@ export default function BlogAdminPage() {
             {blogs.length ? (
               blogs.map((blog) => (
                 <tr
-                  key={blog.id}
+                  key={blog._id}
                   className="hover:bg-white/10 transition-colors"
                 >
                   <td className="p-4">
@@ -312,7 +317,7 @@ export default function BlogAdminPage() {
                   </td>
                   <td className="p-4 text-right">
                     <button
-                      onClick={() => handleDeleteBlog(blog.id)}
+                      onClick={() => handleDeleteBlog(blog._id)}
                       className="px-4 py-2 text-sm text-white bg-red-500/80 hover:bg-red-600 rounded-lg shadow-sm transition-all font-body"
                     >
                       Delete
