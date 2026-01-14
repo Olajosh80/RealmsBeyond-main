@@ -93,7 +93,7 @@ export const EcommerceMetrics = () => {
           <div className="relative z-10">
             <div className="flex justify-between items-start mb-4">
               <div className={`p-3 rounded-xl ${metric.color} text-white shadow-lg shadow-current/20 group-hover:scale-110 transition-transform duration-300`}>
-                {React.cloneElement(metric.icon as React.ReactElement, { className: "text-lg" })}
+                {React.cloneElement(metric.icon as React.ReactElement<{ className?: string }>, { className: "text-lg" })}
               </div>
               {/* Badge */}
               <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold ${metric.trend === "up"

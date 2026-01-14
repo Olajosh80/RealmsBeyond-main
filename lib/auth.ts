@@ -8,7 +8,7 @@ export interface JWTPayload {
   userId: string;
   email: string;
   role: string;
-  [key: string]: any; // Allow for standard claims
+  [key: string]: any; 
 }
 
 export async function generateToken(payload: Omit<JWTPayload, 'iat' | 'exp'>): Promise<string> {
@@ -52,7 +52,7 @@ export async function setAuthCookie(token: string) {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
-    maxAge: 15 * 60, // 15 minutes
+    maxAge: 15 * 60, 
     path: '/',
   });
 }

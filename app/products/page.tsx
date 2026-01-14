@@ -186,7 +186,7 @@ function ProductsContent() {
               <div className="text-center py-20">
                 <p className="font-body text-lg text-red-600 mb-4">{error}</p>
                 <Button
-                  onClick={fetchProducts}
+                  onClick={() => window.location.reload()}
                   variant="primary"
                 >
                   Try Again

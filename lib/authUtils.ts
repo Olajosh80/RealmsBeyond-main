@@ -26,16 +26,16 @@ export async function checkAuth(request: NextRequest): Promise<{ authorized: boo
     return { authorized: false, error: 'Unauthorized: missing token' };
   }
 
-  const payload = verifyToken(token);
+  const payload = await verifyToken(token);
   if (!payload) {
     return { authorized: false, error: 'Unauthorized: invalid or expired token' };
   }
 
-  return { 
-    authorized: true, 
-    userId: payload.userId, 
-    email: payload.email, 
-    role: payload.role 
+  return {
+    authorized: true,
+    userId: payload.userId,
+    email: payload.email,
+    role: payload.role
   };
 }
 

@@ -14,6 +14,7 @@ interface Product {
     compare_at_price?: number; // Regular price if on sale
     category: string;
     tags: string[];
+    features: string[];
     in_stock: boolean;
     featured: boolean;
     images: string[];
@@ -28,17 +29,18 @@ interface Category {
     slug: string;
 }
 
-export function ProductEditor() {
+export function ProductEditor({ productId }: { productId: string | null }) {
     const router = useRouter();
-    const searchParams = useSearchParams();
-    const productId = searchParams.get('id');
-    const { user, openLoginModal } = useAuth(); // Ensure auth context doesn't cause reload loop
+    // Removed useSearchParams to avoid re-renders
+    const { user, openLoginModal } = useAuth();
 
     const [activeTab, setActiveTab] = useState('general');
     const [loading, setLoading] = useState(false);
     const [uploading, setUploading] = useState(false);
     const [categories, setCategories] = useState<Category[]>([]);
     const [initialLoad, setInitialLoad] = useState(true);
+    const [savingDraft, setSavingDraft] = useState(false);
+    const [lastSaved, setLastSaved] = useState<Date | null>(null);
 
     // File Input Refs
     const featuredImageInputRef = useRef<HTMLInputElement>(null);
@@ -52,13 +54,17 @@ export function ProductEditor() {
         price: 0,
         category: '',
         tags: [],
+        features: [],
         in_stock: true,
         featured: false,
         images: [],
     });
 
     const [tagInput, setTagInput] = useState('');
+    const [featureInput, setFeatureInput] = useState('');
     const [isSlugManuallyEdited, setIsSlugManuallyEdited] = useState(false);
+
+    const [draftLoaded, setDraftLoaded] = useState(false);
 
     // Fetch initial data & Restore Draft
     useEffect(() => {
@@ -72,45 +78,49 @@ export function ProductEditor() {
                 }
 
                 // Restore draft or fetch
+                let dbProduct = null;
+                const draftId = productId || 'new';
+
                 if (productId) {
                     setLoading(true);
                     const prodRes = await fetch(`/api/products?id=${productId}`);
                     if (prodRes.ok) {
                         const data = await prodRes.json();
-                        let dbProduct = null;
-
-                        // Handle array or single object response
                         if (data.products && Array.isArray(data.products)) {
                             dbProduct = data.products.find((p: any) => p._id === productId);
                         } else if (data._id) {
                             dbProduct = data;
                         }
+                    }
+                }
 
-                        // Check local draft for overrides (unsaved changes)
-                        const localDraft = localStorage.getItem(`product_draft_${productId}`);
-                        if (localDraft) {
-                            try {
-                                const parsed = JSON.parse(localDraft);
-                                // If draft exists, we prioritize it as it contains latest unsaved work
-                                if (parsed) {
-                                    // We merge to ensure we don't lose critical structure, but mostly draft rules
-                                    dbProduct = { ...dbProduct, ...parsed, _id: productId };
-                                    // Optional: We could add a toast here saying "Restored from draft"
-                                }
-                            } catch (e) { console.error('Failed to parse draft', e); }
+                // Check for server-side draft
+                try {
+                    const draftRes = await fetch(`/api/admin/drafts?type=product&id=${draftId}`);
+                    if (draftRes.ok) {
+                        const { draft } = await draftRes.json();
+                        if (draft && draft.data) {
+                            // Merge draft with DB product if editing, or just use draft if new
+                            if (dbProduct) {
+                                dbProduct = { ...dbProduct, ...draft.data, _id: productId };
+                            } else {
+                                dbProduct = draft.data;
+                            }
+                            setDraftLoaded(true);
                         }
+                    }
+                } catch (e) {
+                    console.error('Failed to load draft', e);
+                }
 
-                        if (dbProduct) setProduct(dbProduct);
-                    }
-                } else {
-                    // New product - check for draft
-                    const localDraft = localStorage.getItem('product_draft_new');
-                    if (localDraft) {
-                        try {
-                            const parsed = JSON.parse(localDraft);
-                            if (parsed) setProduct(parsed);
-                        } catch (e) { }
-                    }
+                if (dbProduct) {
+                    // Ensure arrays are initialized
+                    setProduct({
+                        ...dbProduct,
+                        features: dbProduct.features || [],
+                        tags: dbProduct.tags || [],
+                        images: dbProduct.images || []
+                    });
                 }
             } catch (err) {
                 console.error(err);
@@ -121,19 +131,61 @@ export function ProductEditor() {
         };
 
         loadInitData();
-    }, [productId]);
+    }, [productId]); // Only run when ID changes
+
+    const discardDraft = async () => {
+        try {
+            const draftId = productId || 'new';
+            await fetch(`/api/admin/drafts?type=product&id=${draftId}`, { method: 'DELETE' });
+            setDraftLoaded(false);
+            if (!productId) {
+                setProduct({
+                    name: '',
+                    slug: '',
+                    description: '',
+                    price: 0,
+                    category: '',
+                    tags: [],
+                    features: [],
+                    in_stock: true,
+                    featured: false,
+                    images: [],
+                });
+            } else {
+                window.location.reload();
+            }
+        } catch (e) {
+            console.error('Failed to discard draft', e);
+        }
+    };
 
     // Auto-save draft
     useEffect(() => {
         // Don't save if we are loading initial data or uploading
         if (loading || initialLoad || uploading) return;
 
-        const saveDraft = setTimeout(() => {
+        const saveDraft = setTimeout(async () => {
             if (!product.name && !product.description && !product.price) return; // Don't save empty
 
-            const key = `product_draft_${productId || 'new'}`;
-            localStorage.setItem(key, JSON.stringify(product));
-        }, 800); // Debounce
+            try {
+                setSavingDraft(true);
+                const draftId = productId || 'new';
+                await fetch('/api/admin/drafts', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        resourceType: 'product',
+                        resourceId: draftId,
+                        data: product
+                    })
+                });
+                setLastSaved(new Date());
+            } catch (e) {
+                console.error('Failed to auto-save draft', e);
+            } finally {
+                setSavingDraft(false);
+            }
+        }, 1000); // 1s debounce
 
         return () => clearTimeout(saveDraft);
     }, [product, productId, loading, initialLoad, uploading]);
@@ -229,6 +281,23 @@ export function ProductEditor() {
         setTagInput('');
     };
 
+    // Feature Handlers
+    const handleAddFeature = () => {
+        if (!featureInput.trim()) return;
+        setProduct(prev => ({
+            ...prev,
+            features: [...(prev.features || []), featureInput.trim()]
+        }));
+        setFeatureInput('');
+    };
+
+    const handleRemoveFeature = (index: number) => {
+        setProduct(prev => ({
+            ...prev,
+            features: prev.features.filter((_, i) => i !== index)
+        }));
+    };
+
     // Category Modal State
     const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
     const [newCategoryName, setNewCategoryName] = useState('');
@@ -300,7 +369,10 @@ export function ProductEditor() {
             });
 
             if (res.ok) {
-                localStorage.removeItem(`product_draft_${productId || 'new'}`);
+                // Remove server-side draft
+                try {
+                    await fetch(`/api/admin/drafts?type=product&id=${productId || 'new'}`, { method: 'DELETE' });
+                } catch (e) { console.error('Failed to cleanup draft', e); }
 
                 if (!productId) {
                     showMessage('Success', 'Product created successfully!', 'success', () => {
@@ -340,9 +412,26 @@ export function ProductEditor() {
                     <button onClick={() => router.back()} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-500">
                         <FiArrowLeft size={20} />
                     </button>
-                    <h2 className="font-heading font-bold text-gray-800 text-lg">
-                        {productId ? 'Edit Product' : 'New Product'}
-                    </h2>
+                    <div>
+                        <h2 className="font-heading font-bold text-gray-800 text-lg">
+                            {productId ? 'Edit Product' : 'New Product'}
+                        </h2>
+                        {/* Draft Status */}
+                        <div className="text-xs flex items-center gap-2 h-4">
+                            {savingDraft ? (
+                                <span className="text-gray-400 animate-pulse">Saving draft...</span>
+                            ) : lastSaved ? (
+                                <span className="text-gray-400">
+                                    Draft saved {lastSaved.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                </span>
+                            ) : null}
+                            {(draftLoaded || lastSaved) && !savingDraft && (
+                                <button onClick={discardDraft} className="text-red-400 hover:text-red-600 hover:underline">
+                                    Discard draft
+                                </button>
+                            )}
+                        </div>
+                    </div>
                 </div>
                 <div className="flex gap-3">
                     <button onClick={() => router.push('/admin/products')} className="px-4 py-2 text-sm text-gray-600 font-medium hover:text-gray-900">
@@ -374,7 +463,7 @@ export function ProductEditor() {
                         />
                         <div className="flex items-center gap-2 text-sm text-gray-500 px-2">
                             <span>Permalink:</span>
-                            <span className="text-gray-400">/product/</span>
+                            <span className="text-gray-400">/products/</span>
                             <input
                                 type="text"
                                 name="slug"
@@ -413,6 +502,7 @@ export function ProductEditor() {
                                     { id: 'general', icon: FiSettings, label: 'General' },
                                     { id: 'inventory', icon: FiBox, label: 'Inventory' },
                                     { id: 'shipping', icon: FiTruck, label: 'Shipping' },
+                                    { id: 'features', icon: FiTag, label: 'Features' },
                                 ].map(tab => (
                                     <button
                                         key={tab.id}
@@ -503,6 +593,47 @@ export function ProductEditor() {
                                                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-rare-primary focus:ring focus:ring-rare-primary/20 sm:text-sm p-2 border"
                                             />
                                         </label>
+                                    </div>
+                                )}
+
+                                {activeTab === 'features' && (
+                                    <div className="space-y-4">
+                                        <div className="flex gap-2">
+                                            <input
+                                                type="text"
+                                                value={featureInput}
+                                                onChange={(e) => setFeatureInput(e.target.value)}
+                                                onKeyDown={(e) => e.key === 'Enter' && handleAddFeature()}
+                                                placeholder="Add a key feature (e.g., Premium quality materials)"
+                                                className="flex-1 text-sm border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-rare-primary"
+                                            />
+                                            <button
+                                                onClick={handleAddFeature}
+                                                className="px-4 py-2 text-sm bg-gray-100 border border-gray-200 rounded-lg hover:bg-gray-200 font-medium transition-colors"
+                                            >
+                                                Add
+                                            </button>
+                                        </div>
+
+                                        {product.features && product.features.length > 0 ? (
+                                            <ul className="space-y-2 border border-gray-100 rounded-lg p-2 bg-gray-50/30">
+                                                {product.features.map((feature, index) => (
+                                                    <li key={index} className="flex items-center justify-between gap-3 bg-white p-2 rounded shadow-sm border border-gray-100">
+                                                        <span className="text-sm text-gray-700">{feature}</span>
+                                                        <button
+                                                            onClick={() => handleRemoveFeature(index)}
+                                                            className="text-gray-400 hover:text-red-500 p-1 rounded-full hover:bg-red-50 transition-colors"
+                                                        >
+                                                            <FiX size={14} />
+                                                        </button>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        ) : (
+                                            <div className="text-sm text-gray-400 italic text-center py-4 bg-gray-50 rounded-lg border border-dashed border-gray-200">
+                                                No features added yet. Add key selling points here.
+                                            </div>
+                                        )}
                                     </div>
                                 )}
                             </div>

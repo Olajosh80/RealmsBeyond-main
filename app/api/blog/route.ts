@@ -56,6 +56,28 @@ export async function GET(request: NextRequest) {
   }
 }
 
+// Helper to ensure unique slug
+// Helper to ensure unique slug
+async function ensureUniqueSlug(slug: string, model: any, currentId?: string) {
+  let uniqueSlug = slug;
+  let counter = 1;
+
+  while (true) {
+    const query: any = { slug: uniqueSlug };
+    if (currentId) {
+      query._id = { $ne: currentId };
+    }
+
+    const exists = await model.findOne(query);
+    if (!exists) break;
+
+    uniqueSlug = `${slug}-${counter}`;
+    counter++;
+  }
+
+  return uniqueSlug;
+}
+
 export async function POST(request: NextRequest) {
   try {
     const user = await getAuthUser();
@@ -64,9 +86,21 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
+
+    if (!body.slug && body.title) {
+      body.slug = body.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    }
+
+    if (body.slug) {
+      body.slug = await ensureUniqueSlug(body.slug, BlogPost);
+    }
+
     const post = await BlogPost.create(body);
     return NextResponse.json(post, { status: 201 });
   } catch (error: any) {
+    if (error.code === 11000) {
+      return NextResponse.json({ error: 'Duplicate key error.' }, { status: 409 });
+    }
     console.error('[Blog API] POST Error:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }

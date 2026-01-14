@@ -38,7 +38,7 @@ export default function VerifyEmailPage() {
                                 <Button href="/signin" variant="outline" className="min-w-[140px]">
                                     Back to Sign In
                                 </Button>
-                                <Button href="/" variant="ghost" className="min-w-[140px]">
+                                <Button href="/" variant="outline" className="min-w-[140px]">
                                     Go Home
                                 </Button>
                             </div>

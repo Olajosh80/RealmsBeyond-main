@@ -10,6 +10,21 @@ import ProductModel from '@/lib/models/Product';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 
+export const revalidate = 60;
+
+export async function generateStaticParams() {
+  await dbConnect();
+  try {
+    const divisions = await DivisionModel.find({}, 'slug').lean();
+    return divisions.map((division: any) => ({
+      slug: division.slug,
+    }));
+  } catch (error) {
+    console.error('Error generating static params for divisions:', error);
+    return [];
+  }
+}
+
 async function getDivisionData(slug: string) {
   try {
     await dbConnect();
@@ -17,7 +32,7 @@ async function getDivisionData(slug: string) {
     if (!division) return null;
 
     const products = await ProductModel.find({ division_id: division._id, in_stock: true }).limit(6).lean();
-    
+
     return {
       division: JSON.parse(JSON.stringify(division)),
       products: JSON.parse(JSON.stringify(products))
@@ -28,8 +43,9 @@ async function getDivisionData(slug: string) {
   }
 }
 
-export default async function DivisionDetailPage({ params }: { params: { slug: string } }) {
-  const data = await getDivisionData(params.slug);
+export default async function DivisionDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const data = await getDivisionData(slug);
 
   if (!data) {
     notFound();
@@ -40,7 +56,7 @@ export default async function DivisionDetailPage({ params }: { params: { slug: s
   return (
     <>
       <Header />
-      
+
       <main>
         <Hero
           badge="Our Divisions"

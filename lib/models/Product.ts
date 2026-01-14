@@ -12,6 +12,7 @@ export interface IProduct extends Document {
   in_stock: boolean;
   featured: boolean;
   tags: string[];
+  features: string[];
   created_at: Date;
   updated_at: Date;
 }
@@ -34,6 +35,7 @@ const ProductSchema: Schema = new Schema(
     images: { type: [String], default: [] },
     category: { type: String, index: true },
     tags: { type: [String], default: [] },
+    features: { type: [String], default: [] },
     division_id: { type: Schema.Types.ObjectId, ref: 'Division', index: true },
     featured: { type: Boolean, default: false, index: true },
   },

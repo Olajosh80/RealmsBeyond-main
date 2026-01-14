@@ -4,10 +4,10 @@ import { getAuthUser } from '@/lib/auth';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const post = await BlogPost.findById(id);
     if (!post) {
       return NextResponse.json({ error: 'Blog post not found' }, { status: 404 });
@@ -19,9 +19,31 @@ export async function GET(
   }
 }
 
+// Helper to ensure unique slug (can be shared or duplicated if utility file not present)
+// Helper to ensure unique slug (can be shared or duplicated if utility file not present)
+async function ensureUniqueSlug(slug: string, model: any, currentId?: string) {
+  let uniqueSlug = slug;
+  let counter = 1;
+
+  while (true) {
+    const query: any = { slug: uniqueSlug };
+    if (currentId) {
+      query._id = { $ne: currentId };
+    }
+
+    const exists = await model.findOne(query);
+    if (!exists) break;
+
+    uniqueSlug = `${slug}-${counter}`;
+    counter++;
+  }
+
+  return uniqueSlug;
+}
+
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await getAuthUser();
@@ -29,8 +51,12 @@ export async function PUT(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
+
+    if (body.slug) {
+      body.slug = await ensureUniqueSlug(body.slug, BlogPost, id);
+    }
 
     const post = await BlogPost.findByIdAndUpdate(id, body, { new: true });
     if (!post) {
@@ -39,6 +65,9 @@ export async function PUT(
 
     return NextResponse.json(post);
   } catch (error: any) {
+    if (error.code === 11000) {
+      return NextResponse.json({ error: 'Duplicate key error.' }, { status: 409 });
+    }
     console.error('[Blog Detail API] PUT Error:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
@@ -46,7 +75,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await getAuthUser();
@@ -54,7 +83,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { id } = params;
+    const { id } = await params;
     const post = await BlogPost.findByIdAndDelete(id);
     if (!post) {
       return NextResponse.json({ error: 'Blog post not found' }, { status: 404 });

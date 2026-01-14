@@ -1,19 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Product from '@/lib/models/Product';
+import dbConnect from '@/lib/db';
 import { getAuthUser } from '@/lib/auth';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    await dbConnect();
+    const { id } = await params;
 
     let product;
     if (id.match(/^[0-9a-fA-F]{24}$/)) {
-      product = await Product.findById(id).populate('division_id');
+      product = await Product.findById(id).populate('division_id').lean();
     } else {
-      product = await Product.findOne({ slug: id }).populate('division_id');
+      product = await Product.findOne({ slug: id }).populate('division_id').lean();
     }
     if (!product) {
       return NextResponse.json({ error: 'Product not found' }, { status: 404 });
@@ -28,7 +30,7 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await getAuthUser();
@@ -36,7 +38,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
 
     const product = await Product.findByIdAndUpdate(id, body, { new: true });
@@ -53,7 +55,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const user = await getAuthUser();
@@ -61,7 +63,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { id } = params;
+    const { id } = await params;
 
     const product = await Product.findByIdAndDelete(id);
     if (!product) {

@@ -98,9 +98,24 @@ export async function POST(request: NextRequest) {
     await dbConnect();
     const body = await request.json();
 
+    // Ensure slug is properly generated and unique
+    if (!body.slug && body.name) {
+      body.slug = body.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    }
+
+    if (body.slug) {
+      if (body.slug) {
+        body.slug = await ensureUniqueSlug(body.slug, Product);
+      }
+    }
+
     const product = await Product.create(body);
     return NextResponse.json(product, { status: 201 });
   } catch (error: any) {
+    // Handle duplicate key error explicitly if it still slips through
+    if (error.code === 11000) {
+      return NextResponse.json({ error: 'Duplicate key error. Access key already exists.' }, { status: 409 });
+    }
     console.error('[Products API] POST Error:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
@@ -121,6 +136,11 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Product ID is required' }, { status: 400 });
     }
 
+    // Ensure unique slug if slug is being updated
+    if (updateData.slug) {
+      updateData.slug = await ensureUniqueSlug(updateData.slug, Product, _id);
+    }
+
     const product = await Product.findByIdAndUpdate(_id, updateData, { new: true });
 
     if (!product) {
@@ -129,9 +149,33 @@ export async function PUT(request: NextRequest) {
 
     return NextResponse.json(product);
   } catch (error: any) {
+    if (error.code === 11000) {
+      return NextResponse.json({ error: 'Duplicate key error.' }, { status: 409 });
+    }
     console.error('[Products API] PUT Error:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
+}
+
+
+async function ensureUniqueSlug(slug: string, model: any, currentId?: string) {
+  let uniqueSlug = slug;
+  let counter = 1;
+
+  while (true) {
+    const query: any = { slug: uniqueSlug };
+    if (currentId) {
+      query._id = { $ne: currentId };
+    }
+
+    const exists = await model.findOne(query);
+    if (!exists) break;
+
+    uniqueSlug = `${slug}-${counter}`;
+    counter++;
+  }
+
+  return uniqueSlug;
 }
 
 export async function DELETE(request: NextRequest) {
