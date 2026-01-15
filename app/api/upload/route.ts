@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { writeFile, mkdir } from 'fs/promises';
-import path from 'path';
-import { v4 as uuidv4 } from 'uuid';
+import { uploadToCloudinary } from '@/lib/cloudinary';
 
 export async function POST(request: NextRequest) {
     try {
@@ -12,28 +10,12 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
         }
 
-        const bytes = await file.arrayBuffer();
-        const buffer = Buffer.from(bytes);
+        // Upload to Cloudinary
+        const result = await uploadToCloudinary(file, 'realms_beyond/uploads');
 
-        // Create unique filename
-        const filename = `${uuidv4()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '')}`;
-
-        // Ensure uploads directory exists
-        const uploadDir = path.join(process.cwd(), 'public/uploads');
-        try {
-            await mkdir(uploadDir, { recursive: true });
-        } catch (error) {
-            console.error('Error creating upload dir:', error);
-        }
-
-        const filepath = path.join(uploadDir, filename);
-        await writeFile(filepath, buffer);
-
-        const url = `/uploads/${filename}`;
-
-        return NextResponse.json({ url }, { status: 201 });
+        return NextResponse.json({ url: result.url }, { status: 201 });
     } catch (error: any) {
         console.error('Error uploading file:', error);
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return NextResponse.json({ error: error.message || 'Upload failed' }, { status: 500 });
     }
 }

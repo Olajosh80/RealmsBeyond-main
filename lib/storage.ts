@@ -1,28 +1,33 @@
+import { uploadToCloudinary } from './cloudinary';
+
 export interface UploadResult {
   url: string;
   path: string;
 }
 
 /**
- * Mock image upload (Supabase replacement)
- * In a real scenario, you would integrate Cloudinary, S3, or another storage provider here.
+ * Image upload using Cloudinary
  */
 export async function uploadImage(
   file: File,
-  bucket: string,
-  folder?: string
+  bucket: string, // Kept for interface compatibility, used as part of folder path
+  folder: string = 'uploads'
 ): Promise<UploadResult> {
-  console.log(`Mocking upload for file: ${file.name} to bucket: ${bucket}`);
-  
-  // Return a placeholder or base64 if needed. For now, just a placeholder.
-  return {
-    url: `https://via.placeholder.com/400?text=${file.name}`,
-    path: `mock/${bucket}/${file.name}`
-  };
+  try {
+    const result = await uploadToCloudinary(file, `realms_beyond/${bucket}/${folder}`);
+    return {
+      url: result.url,
+      path: result.public_id
+    };
+  } catch (error) {
+    console.error('Upload failed:', error);
+    throw error;
+  }
 }
 
 export async function deleteImage(bucket: string, path: string): Promise<void> {
-  console.log(`Mocking delete for path: ${path} in bucket: ${bucket}`);
+  // TODO: Implement Cloudinary delete if needed
+  console.log(`Delete requested for path: ${path} in bucket: ${bucket}`);
 }
 
 export async function uploadMultipleImages(

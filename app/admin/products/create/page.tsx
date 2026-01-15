@@ -12,11 +12,11 @@ function CreateProductContent() {
     const isEditMode = !!productId;
 
     return (
-        <div className="min-h-screen bg-rare-background flex flex-col">
+        <div className="min-h-screen bg-slate-900 flex flex-col">
             <Header />
             <main className="flex-grow p-6 lg:p-10">
                 <div className="max-w-7xl mx-auto">
-                    <h1 className="text-3xl font-heading font-bold text-rare-primary mb-8">
+                    <h1 className="text-3xl font-heading font-bold text-white mb-8">
                         {isEditMode ? 'Edit Product' : 'Add New Product'}
                     </h1>
                     <ProductEditor productId={productId} />
@@ -29,8 +29,8 @@ function CreateProductContent() {
 export default function CreateProductPage() {
     return (
         <Suspense fallback={
-            <div className="min-h-screen bg-rare-background flex items-center justify-center">
-                <AiOutlineLoading3Quarters className="h-8 w-8 animate-spin text-rare-primary" />
+            <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+                <AiOutlineLoading3Quarters className="h-8 w-8 animate-spin text-white" />
             </div>
         }>
             <CreateProductContent />

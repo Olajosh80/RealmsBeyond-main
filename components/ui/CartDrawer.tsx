@@ -41,9 +41,8 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
 
       {/* Drawer */}
       <div
-        className={`fixed top-0 right-0 h-full w-full max-w-md bg-rare-background shadow-2xl z-50 transform transition-transform duration-300 ease-in-out ${
-          isOpen ? 'translate-x-0' : 'translate-x-full'
-        }`}
+        className={`fixed top-0 right-0 h-full w-full max-w-md bg-rare-background shadow-2xl z-50 transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'
+          }`}
       >
         <div className="flex flex-col h-full">
           {/* Header */}
@@ -113,7 +112,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
                         </h3>
                       </Link>
                       <p className="font-body text-sm font-semibold text-rare-primary mb-3">
-                        ${item.price.toFixed(2)}
+                        ₦{item.price.toFixed(2)}
                       </p>
 
                       {/* Quantity Controls */}
@@ -158,7 +157,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
               <div className="flex items-center justify-between">
                 <span className="font-heading text-lg font-normal text-rare-text">Total:</span>
                 <span className="font-heading text-2xl font-normal text-rare-primary">
-                  ${getTotalPrice().toFixed(2)}
+                  ₦{getTotalPrice().toFixed(2)}
                 </span>
               </div>
               <Button

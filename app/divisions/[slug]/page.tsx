@@ -95,7 +95,7 @@ export default async function DivisionDetailPage({ params }: { params: Promise<{
                       <div className="p-6">
                         <h3 className="font-heading text-xl font-normal text-rare-primary mb-2">{product.name}</h3>
                         <p className="font-body text-sm text-rare-text-light mb-4 line-clamp-2">{product.description}</p>
-                        <span className="font-semibold text-rare-primary">${product.price.toFixed(2)}</span>
+                        <span className="font-semibold text-rare-primary">₦{product.price.toFixed(2)}</span>
                       </div>
                     </Link>
                   </Card>

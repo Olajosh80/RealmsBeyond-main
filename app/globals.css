@@ -4,13 +4,13 @@
   --font-heading: var(--font-cormorant), serif;
   --font-body: var(--font-inter), sans-serif;
   
-  --color-rare-primary: #041a45;
+  /* Primary - Deep Navy/Midnight Blue */
+  --rare-primary: #1a2a3a;
   --color-rare-primary-light: rgba(4, 26, 69, 0.08);
   --color-rare-secondary: #3f5071;
-  --color-rare-accent: #edcea4;
-  --color-rare-background: #fdfbf8;
-  --color-rare-background-alt: #edcea4;
-  --color-rare-text: #041a45;
+  --color-rare-accent: #edcea4; /* New - Creamier/Darker Background */
+  --rare-background: #fdfbf7;
+  --rare-background-dark: #f0ece4; /* Added a darker variant for admin */
   --color-rare-text-light: #3f5071;
   --color-rare-border: rgba(4, 26, 69, 0.3);
   --color-rare-footer: #041a45;

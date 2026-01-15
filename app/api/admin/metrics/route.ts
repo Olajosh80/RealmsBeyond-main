@@ -20,7 +20,7 @@ export async function GET() {
     ]);
 
     const totalRevenue = ordersData.reduce((sum, order) => sum + (order.total_amount || 0), 0);
-    
+
     const now = new Date();
     const thisMonthRevenue = ordersData.filter(order => {
       const orderDate = new Date(order.created_at);
@@ -29,12 +29,25 @@ export async function GET() {
 
     const revenueGrowth = totalRevenue > 0 ? ((thisMonthRevenue / totalRevenue) * 100).toFixed(1) : '0';
 
+    const monthlyRevenue = new Array(12).fill(0);
+    ordersData.forEach(order => {
+      const date = new Date(order.created_at);
+      const month = date.getMonth(); // 0-11
+      const year = date.getFullYear();
+      const currentYear = new Date().getFullYear();
+
+      if (year === currentYear) {
+        monthlyRevenue[month] += (order.total_amount || 0);
+      }
+    });
+
     return NextResponse.json({
       customers: usersCount,
       orders: ordersData.length,
       revenue: totalRevenue,
       revenueGrowth: `${revenueGrowth}%`,
-      products: productsCount
+      products: productsCount,
+      chartData: monthlyRevenue
     });
   } catch (error: any) {
     console.error('[Metrics API] GET Error:', error);

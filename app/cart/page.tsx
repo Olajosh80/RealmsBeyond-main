@@ -187,7 +187,7 @@ export default function CartPage() {
                                     <div className="bg-rare-accent/10 rounded-lg p-4 space-y-2">
                                         <p className="font-body text-sm text-rare-text flex items-center gap-2">
                                             <span className="text-green-600">✓</span>
-                                            Free shipping on orders over $100
+                                            Free shipping on orders over ₦100,000
                                         </p>
                                         <p className="font-body text-sm text-rare-text flex items-center gap-2">
                                             <span className="text-green-600">✓</span>

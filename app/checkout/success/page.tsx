@@ -22,7 +22,7 @@ export default function CheckoutSuccessPage() {
   return (
     <>
       <Header />
-      
+
       <main className="min-h-screen bg-gradient-to-br from-green-50 to-white py-16">
         <div className="container mx-auto px-4 max-w-4xl">
           {/* Success Icon */}
@@ -47,7 +47,7 @@ export default function CheckoutSuccessPage() {
                   Confirmed
                 </span>
               </div>
-              
+
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm text-rare-text-light mb-1">Order Number</p>
@@ -55,15 +55,15 @@ export default function CheckoutSuccessPage() {
                 </div>
                 <div>
                   <p className="text-sm text-rare-text-light mb-1">Order Date</p>
-                  <p className="font-medium text-rare-text">{new Date().toLocaleDateString('en-US', { 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric' 
+                  <p className="font-medium text-rare-text">{new Date().toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
                   })}</p>
                 </div>
                 <div>
                   <p className="text-sm text-rare-text-light mb-1">Total Amount</p>
-                  <p className="font-bold text-2xl text-rare-primary">$339.91</p>
+                  <p className="font-bold text-2xl text-rare-primary">₦339,910</p>
                 </div>
                 <div>
                   <p className="text-sm text-rare-text-light mb-1">Payment Method</p>
@@ -96,7 +96,7 @@ export default function CheckoutSuccessPage() {
                   <div className="flex-1">
                     <h4 className="font-medium text-rare-text">Designer Leather Bag</h4>
                     <p className="text-sm text-rare-text-light">Quantity: 1</p>
-                    <p className="font-semibold text-rare-primary mt-1">$299.99</p>
+                    <p className="font-semibold text-rare-primary mt-1">₦299,990</p>
                   </div>
                 </div>
               </div>
@@ -112,7 +112,7 @@ export default function CheckoutSuccessPage() {
                 Order confirmation sent to your email address
               </p>
             </Card>
-            
+
             <Card className="text-center">
               <MdLocalShipping className="w-12 h-12 text-rare-primary mx-auto mb-4" />
               <h3 className="font-heading text-lg mb-2">Track Your Order</h3>
@@ -120,7 +120,7 @@ export default function CheckoutSuccessPage() {
                 Shipping updates will be sent via email
               </p>
             </Card>
-            
+
             <Card className="text-center">
               <MdDownload className="w-12 h-12 text-rare-primary mx-auto mb-4" />
               <h3 className="font-heading text-lg mb-2">Download Invoice</h3>
