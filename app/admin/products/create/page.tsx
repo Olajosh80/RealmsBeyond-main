@@ -3,7 +3,7 @@
 import React, { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { ProductEditor } from '@/components/admin/products/ProductEditor';
-import { Header } from '@/components/layout/Header';
+import { AdminHeader } from '@/components/admin/AdminHeader';
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 
 function CreateProductContent() {
@@ -12,11 +12,10 @@ function CreateProductContent() {
     const isEditMode = !!productId;
 
     return (
-        <div className="min-h-screen bg-slate-900 flex flex-col">
-            <Header />
-            <main className="flex-grow p-6 lg:p-10">
+        <div className="bg-gray-50 min-h-screen">
+            <main className="p-6 lg:p-10">
                 <div className="max-w-7xl mx-auto">
-                    <h1 className="text-3xl font-heading font-bold text-white mb-8">
+                    <h1 className="text-3xl font-heading font-bold text-gray-900 mb-8">
                         {isEditMode ? 'Edit Product' : 'Add New Product'}
                     </h1>
                     <ProductEditor productId={productId} />
@@ -29,8 +28,8 @@ function CreateProductContent() {
 export default function CreateProductPage() {
     return (
         <Suspense fallback={
-            <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-                <AiOutlineLoading3Quarters className="h-8 w-8 animate-spin text-white" />
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <AiOutlineLoading3Quarters className="h-8 w-8 animate-spin text-rare-primary" />
             </div>
         }>
             <CreateProductContent />

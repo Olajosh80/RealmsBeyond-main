@@ -5,8 +5,19 @@ import Link from 'next/link';
 import { FiPlus, FiEdit2, FiTrash2, FiSearch } from 'react-icons/fi';
 import { MdErrorOutline, MdCheckCircle } from 'react-icons/md';
 
+interface BlogPost {
+  _id: string;
+  title: string;
+  author: string;
+  category?: string;
+  featured_image?: string;
+  image?: string;
+  published: boolean;
+  created_at: string;
+}
+
 export default function BlogListPage() {
-  const [blogs, setBlogs] = useState<any[]>([]);
+  const [blogs, setBlogs] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -24,9 +35,9 @@ export default function BlogListPage() {
 
       const data = await response.json();
       setBlogs(data.posts || data || []); // Handle { posts: [], pagination: ... } or just []
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error fetching blogs:', err);
-      setError(err.message || 'Failed to load blogs.');
+      setError(err instanceof Error ? err.message : 'Failed to load blogs.');
     } finally {
       setLoading(false);
     }
@@ -52,9 +63,9 @@ export default function BlogListPage() {
       await fetchBlogs();
       setSuccess('Blog post deleted successfully!');
       setTimeout(() => setSuccess(null), 3000);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error deleting blog:', error);
-      setError('Failed to delete blog post: ' + error.message);
+      setError('Failed to delete blog post: ' + (error instanceof Error ? error.message : 'Unknown error'));
     }
   };
 
@@ -64,17 +75,17 @@ export default function BlogListPage() {
   );
 
   return (
-    <div className="min-h-screen bg-slate-900 flex flex-col">
-      <main className="flex-grow p-6 lg:p-10">
+    <div className="bg-gray-50 min-h-screen">
+      <main className="p-6 lg:p-10">
         <div className="space-y-6">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
-              <h1 className="text-3xl font-heading font-bold text-white">Blog Posts</h1>
-              <p className="text-slate-400 mt-1">Manage your insightful articles.</p>
+              <h1 className="text-3xl font-heading font-bold text-gray-900">Blog Posts</h1>
+              <p className="text-gray-500 mt-1">Manage your insightful articles.</p>
             </div>
             <Link
               href="/admin/blog/create"
-              className="flex items-center gap-2 px-6 py-2.5 bg-rare-primary hover:bg-rare-primary/90 text-white rounded-xl transition-all shadow-lg shadow-rare-primary/20 hover:scale-105 active:scale-95 font-bold"
+              className="flex items-center gap-2 px-6 py-2.5 bg-rare-primary hover:bg-rare-primary/90 text-white rounded-xl transition-all shadow-lg hover:scale-105 active:scale-95 font-bold"
             >
               <FiPlus className="w-5 h-5" />
               Create New
@@ -83,26 +94,26 @@ export default function BlogListPage() {
 
           {/* Messages */}
           {error && (
-            <div className="flex items-center gap-2 p-4 bg-red-900/20 text-red-300 rounded-xl border border-red-800">
+            <div className="flex items-center gap-2 p-4 bg-red-50 text-red-700 rounded-xl border border-red-200">
               <MdErrorOutline className="h-5 w-5" />
               <p>{error}</p>
             </div>
           )}
           {success && (
-            <div className="flex items-center gap-2 p-4 bg-green-900/20 text-green-300 rounded-xl border border-green-800">
+            <div className="flex items-center gap-2 p-4 bg-green-50 text-green-700 rounded-xl border border-green-200">
               <MdCheckCircle className="h-5 w-5" />
               <p>{success}</p>
             </div>
           )}
 
           {/* Filters */}
-          <div className="bg-slate-800/80 backdrop-blur-md p-4 rounded-xl border border-slate-700 shadow-sm flex items-center gap-4">
+          <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex items-center gap-4">
             <div className="relative flex-1 max-w-md">
-              <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
               <input
                 type="text"
                 placeholder="Search by title or author..."
-                className="w-full pl-10 pr-4 py-2 bg-slate-900 border border-slate-700 rounded-lg focus:ring-2 focus:ring-rare-primary/50 focus:border-rare-primary outline-none transition-all text-white placeholder-slate-500"
+                className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-rare-primary/20 focus:border-rare-primary outline-none transition-all text-gray-900 placeholder-gray-500"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -110,29 +121,29 @@ export default function BlogListPage() {
           </div>
 
           {/* Table */}
-          <div className="bg-slate-800/80 backdrop-blur-md border border-slate-700 rounded-xl shadow-xl overflow-hidden">
+          <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
             {loading ? (
-              <div className="p-12 text-center text-slate-400">Loading blog posts...</div>
+              <div className="p-12 text-center text-gray-500">Loading blog posts...</div>
             ) : filteredBlogs.length === 0 ? (
-              <div className="p-12 text-center text-slate-400">No blog posts found.</div>
+              <div className="p-12 text-center text-gray-500">No blog posts found.</div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left">
-                  <thead className="bg-slate-900/50 border-b border-slate-700">
+                  <thead className="bg-gray-50 border-b border-gray-200">
                     <tr>
-                      <th className="p-5 font-heading font-medium text-slate-400 text-sm tracking-wider uppercase">Image</th>
-                      <th className="p-5 font-heading font-medium text-slate-400 text-sm tracking-wider uppercase">Title</th>
-                      <th className="p-5 font-heading font-medium text-slate-400 text-sm tracking-wider uppercase">Category</th>
-                      <th className="p-5 font-heading font-medium text-slate-400 text-sm tracking-wider uppercase">Author</th>
-                      <th className="p-5 font-heading font-medium text-slate-400 text-sm tracking-wider uppercase">Status</th>
-                      <th className="p-5 font-heading font-medium text-slate-400 text-sm tracking-wider uppercase text-right">Actions</th>
+                      <th className="p-5 font-heading font-medium text-gray-600 text-sm tracking-wider uppercase">Image</th>
+                      <th className="p-5 font-heading font-medium text-gray-600 text-sm tracking-wider uppercase">Title</th>
+                      <th className="p-5 font-heading font-medium text-gray-600 text-sm tracking-wider uppercase">Category</th>
+                      <th className="p-5 font-heading font-medium text-gray-600 text-sm tracking-wider uppercase">Author</th>
+                      <th className="p-5 font-heading font-medium text-gray-600 text-sm tracking-wider uppercase">Status</th>
+                      <th className="p-5 font-heading font-medium text-gray-600 text-sm tracking-wider uppercase text-right">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-700/50">
+                  <tbody className="divide-y divide-gray-100">
                     {filteredBlogs.map((blog) => (
-                      <tr key={blog._id} className="hover:bg-slate-700/30 transition-colors">
+                      <tr key={blog._id} className="hover:bg-gray-50 transition-colors">
                         <td className="p-5">
-                          <div className="w-16 h-10 rounded-lg overflow-hidden bg-slate-900 relative border border-slate-700">
+                          <div className="w-16 h-10 rounded-lg overflow-hidden bg-gray-100 relative border border-gray-200">
                             {(blog.featured_image || blog.image) ? (
                               <img
                                 src={blog.featured_image || blog.image}
@@ -140,21 +151,21 @@ export default function BlogListPage() {
                                 className="w-full h-full object-cover"
                               />
                             ) : (
-                              <div className="w-full h-full flex items-center justify-center text-xs text-slate-600">No Img</div>
+                              <div className="w-full h-full flex items-center justify-center text-xs text-gray-500">No Img</div>
                             )}
                           </div>
                         </td>
-                        <td className="p-5 font-bold text-white max-w-xs truncate">{blog.title}</td>
+                        <td className="p-5 font-bold text-gray-900 max-w-xs truncate">{blog.title}</td>
                         <td className="p-5">
-                          <span className="px-2.5 py-1 bg-slate-700 text-slate-300 rounded-md text-xs font-medium border border-slate-600">
+                          <span className="px-2.5 py-1 bg-gray-100 text-gray-600 rounded-md text-xs font-medium border border-gray-200">
                             {blog.category || 'Uncategorized'}
                           </span>
                         </td>
-                        <td className="p-5 text-slate-400 text-sm">{blog.author}</td>
+                        <td className="p-5 text-gray-500 text-sm">{blog.author}</td>
                         <td className="p-5">
                           <span className={`px-2.5 py-1 rounded-full text-xs font-bold border ${blog.published
-                            ? 'bg-green-900/30 text-green-400 border-green-900/50'
-                            : 'bg-amber-900/30 text-amber-400 border-amber-900/50'
+                            ? 'bg-green-50 text-green-600 border-green-200'
+                            : 'bg-amber-50 text-amber-600 border-amber-200'
                             }`}>
                             {blog.published ? 'Published' : 'Draft'}
                           </span>
@@ -163,14 +174,14 @@ export default function BlogListPage() {
                           <div className="flex items-center justify-end gap-2">
                             <Link
                               href={`/admin/blog/${blog._id}`}
-                              className="p-2 text-blue-400 hover:bg-blue-900/20 rounded-lg transition-colors"
+                              className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                               title="Edit"
                             >
                               <FiEdit2 className="w-4 h-4" />
                             </Link>
                             <button
                               onClick={() => handleDeleteBlog(blog._id)}
-                              className="p-2 text-red-400 hover:bg-red-900/20 rounded-lg transition-colors"
+                              className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                               title="Delete"
                             >
                               <FiTrash2 className="w-4 h-4" />

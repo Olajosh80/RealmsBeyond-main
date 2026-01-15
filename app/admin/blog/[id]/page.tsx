@@ -52,7 +52,7 @@ export default function EditBlogPage() {
     }
 
     return (
-        <div className="min-h-screen bg-slate-900 p-6">
+        <div className="min-h-screen bg-gray-50 p-6">
             <BlogForm initialData={blog} isEditing />
         </div>
     );

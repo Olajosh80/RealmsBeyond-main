@@ -407,26 +407,26 @@ export function ProductEditor({ productId }: { productId: string | null }) {
     return (
         <div className="flex flex-col gap-6 relative">
             {/* Toolbar */}
-            <div className="sticky top-0 z-10 bg-slate-800/80 backdrop-blur-xl border-b border-slate-700 -mx-6 px-6 py-4 flex justify-between items-center shadow-sm">
+            <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-xl border-b border-gray-200 -mx-6 px-6 py-4 flex justify-between items-center shadow-sm">
                 <div className="flex items-center gap-4">
-                    <button onClick={() => router.back()} className="p-2 hover:bg-slate-700 rounded-full transition-colors text-slate-400 hover:text-white">
+                    <button onClick={() => router.back()} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-500 hover:text-gray-900">
                         <FiArrowLeft size={20} />
                     </button>
                     <div>
-                        <h2 className="font-heading font-bold text-white text-lg">
+                        <h2 className="font-heading font-bold text-gray-900 text-lg">
                             {productId ? 'Edit Product' : 'New Product'}
                         </h2>
                         {/* Draft Status */}
                         <div className="text-xs flex items-center gap-2 h-4">
                             {savingDraft ? (
-                                <span className="text-slate-500 animate-pulse">Saving draft...</span>
+                                <span className="text-gray-400 animate-pulse">Saving draft...</span>
                             ) : lastSaved ? (
-                                <span className="text-slate-500">
+                                <span className="text-gray-400">
                                     Draft saved {lastSaved.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                 </span>
                             ) : null}
                             {(draftLoaded || lastSaved) && !savingDraft && (
-                                <button onClick={discardDraft} className="text-red-400 hover:text-red-500 hover:underline">
+                                <button onClick={discardDraft} className="text-red-500 hover:text-red-600 hover:underline">
                                     Discard draft
                                 </button>
                             )}
@@ -434,7 +434,7 @@ export function ProductEditor({ productId }: { productId: string | null }) {
                     </div>
                 </div>
                 <div className="flex gap-3">
-                    <button onClick={() => router.push('/admin/products')} className="px-4 py-2 text-sm text-slate-400 font-medium hover:text-white">
+                    <button onClick={() => router.push('/admin/products')} className="px-4 py-2 text-sm text-gray-500 font-medium hover:text-gray-900">
                         Cancel
                     </button>
                     <button
@@ -459,45 +459,45 @@ export function ProductEditor({ productId }: { productId: string | null }) {
                             placeholder="Product Name"
                             value={product.name}
                             onChange={handleInputChange}
-                            className="w-full text-3xl font-heading font-bold p-4 bg-slate-800/60 backdrop-blur-md border border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-rare-primary/50 text-white placeholder-slate-500 shadow-sm"
+                            className="w-full text-3xl font-heading font-bold p-4 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-rare-primary/50 text-gray-900 placeholder-gray-400 shadow-sm"
                         />
-                        <div className="flex items-center gap-2 text-sm text-slate-400 px-2">
+                        <div className="flex items-center gap-2 text-sm text-gray-500 px-2">
                             <span>Permalink:</span>
-                            <span className="text-slate-500">/products/</span>
+                            <span className="text-gray-400">/products/</span>
                             <input
                                 type="text"
                                 name="slug"
                                 value={product.slug}
                                 onChange={handleInputChange}
-                                className="bg-transparent border-b border-dashed border-slate-600 hover:border-rare-primary focus:border-rare-primary focus:outline-none text-slate-300 font-mono text-xs py-0.5 min-w-[200px]"
+                                className="bg-transparent border-b border-dashed border-gray-300 hover:border-rare-primary focus:border-rare-primary focus:outline-none text-gray-600 font-mono text-xs py-0.5 min-w-[200px]"
                             />
                         </div>
                     </div>
 
                     {/* Description - Simplified wysiwyg placeholder */}
-                    <div className="bg-slate-800/60 backdrop-blur-md border border-slate-700 rounded-xl overflow-hidden shadow-sm min-h-[300px] flex flex-col">
-                        <div className="bg-slate-900/50 border-b border-slate-700 p-2 flex gap-2">
-                            <button className="p-1.5 hover:bg-slate-700 rounded text-slate-400 hover:text-white font-bold text-xs border border-transparent hover:border-slate-600">Bold</button>
-                            <button className="p-1.5 hover:bg-slate-700 rounded text-slate-400 hover:text-white italic text-xs border border-transparent hover:border-slate-600">Italic</button>
+                    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm min-h-[300px] flex flex-col">
+                        <div className="bg-gray-50 border-b border-gray-200 p-2 flex gap-2">
+                            <button className="p-1.5 hover:bg-gray-200 rounded text-gray-500 hover:text-gray-900 font-bold text-xs border border-transparent hover:border-gray-300">Bold</button>
+                            <button className="p-1.5 hover:bg-gray-200 rounded text-gray-500 hover:text-gray-900 italic text-xs border border-transparent hover:border-gray-300">Italic</button>
                         </div>
                         <textarea
                             name="description"
                             placeholder="Product Description..."
                             value={product.description}
                             onChange={handleInputChange}
-                            className="flex-1 w-full p-4 bg-transparent border-none focus:ring-0 resize-none outline-none font-body text-slate-300 placeholder-slate-600 leading-relaxed"
+                            className="flex-1 w-full p-4 bg-transparent border-none focus:ring-0 resize-none outline-none font-body text-gray-700 placeholder-gray-400 leading-relaxed"
                         />
                     </div>
 
                     {/* Product Data Meta Box */}
-                    <div className="bg-slate-800/80 backdrop-blur-md border border-slate-700 rounded-xl shadow-lg run-in">
-                        <div className="border-b border-slate-700 p-4 bg-slate-900/80 flex items-center justify-between">
-                            <h3 className="font-bold text-white flex items-center gap-2">Product Data</h3>
+                    <div className="bg-white border border-gray-200 rounded-xl shadow-sm run-in">
+                        <div className="border-b border-gray-200 p-4 bg-gray-50 flex items-center justify-between">
+                            <h3 className="font-bold text-gray-900 flex items-center gap-2">Product Data</h3>
                         </div>
 
                         <div className="flex flex-col md:flex-row min-h-[250px]">
                             {/* Tabs */}
-                            <div className="w-full md:w-48 bg-slate-900/50 border-r border-slate-700 p-2 space-y-1">
+                            <div className="w-full md:w-48 bg-gray-50 border-r border-gray-200 p-2 space-y-1">
                                 {[
                                     { id: 'general', icon: FiSettings, label: 'General' },
                                     { id: 'inventory', icon: FiBox, label: 'Inventory' },
@@ -507,9 +507,9 @@ export function ProductEditor({ productId }: { productId: string | null }) {
                                     <button
                                         key={tab.id}
                                         onClick={() => setActiveTab(tab.id)}
-                                        className={`w-full text-left px-4 py-2.5 text-sm font-medium flex items-center gap-3 rounded-lg transition-all ${activeTab === tab.id ? 'bg-slate-700 text-white shadow-sm ring-1 ring-white/5' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}`}
+                                        className={`w-full text-left px-4 py-2.5 text-sm font-medium flex items-center gap-3 rounded-lg transition-all ${activeTab === tab.id ? 'bg-white text-gray-900 shadow-sm ring-1 ring-gray-200' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'}`}
                                     >
-                                        <tab.icon size={16} className={activeTab === tab.id ? 'text-rare-primary' : 'text-slate-500'} />
+                                        <tab.icon size={16} className={activeTab === tab.id ? 'text-rare-primary' : 'text-gray-400'} />
                                         {tab.label}
                                     </button>
                                 ))}
@@ -520,27 +520,27 @@ export function ProductEditor({ productId }: { productId: string | null }) {
                                 {activeTab === 'general' && (
                                     <div className="space-y-4 max-w-sm">
                                         <label className="block">
-                                            <span className="text-sm font-medium text-slate-300">Regular Price (₦)</span>
+                                            <span className="text-sm font-medium text-gray-700">Regular Price (₦)</span>
                                             <input
                                                 type="number"
                                                 name="compare_at_price" // Mapped to regular price if sale used
                                                 value={product.compare_at_price || ''}
                                                 onChange={handleInputChange}
-                                                className="mt-1 block w-full rounded-md border-slate-600 bg-slate-900 text-white shadow-sm focus:border-rare-primary focus:ring focus:ring-rare-primary/20 sm:text-sm p-2 border"
+                                                className="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 text-gray-900 shadow-sm focus:border-rare-primary focus:ring focus:ring-rare-primary/20 sm:text-sm p-2 border"
                                                 placeholder="0.00"
                                             />
                                         </label>
                                         <label className="block">
-                                            <span className="text-sm font-medium text-slate-300">Sale Price (₦)</span>
+                                            <span className="text-sm font-medium text-gray-700">Sale Price (₦)</span>
                                             <input
                                                 type="number"
                                                 name="price" // Mapped to current price
                                                 value={product.price || ''}
                                                 onChange={handleInputChange}
-                                                className="mt-1 block w-full rounded-md border-slate-600 bg-slate-900 text-white shadow-sm focus:border-rare-primary focus:ring focus:ring-rare-primary/20 sm:text-sm p-2 border"
+                                                className="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 text-gray-900 shadow-sm focus:border-rare-primary focus:ring focus:ring-rare-primary/20 sm:text-sm p-2 border"
                                                 placeholder="0.00"
                                             />
-                                            <p className="text-xs text-slate-500 mt-1">This is the price customers will pay.</p>
+                                            <p className="text-xs text-gray-500 mt-1">This is the price customers will pay.</p>
                                         </label>
                                     </div>
                                 )}
@@ -548,13 +548,13 @@ export function ProductEditor({ productId }: { productId: string | null }) {
                                 {activeTab === 'inventory' && (
                                     <div className="space-y-4 max-w-sm">
                                         <label className="block">
-                                            <span className="text-sm font-medium text-slate-300">SKU</span>
+                                            <span className="text-sm font-medium text-gray-700">SKU</span>
                                             <input
                                                 type="text"
                                                 name="sku"
                                                 value={product.sku || ''}
                                                 onChange={handleInputChange}
-                                                className="mt-1 block w-full rounded-md border-slate-600 bg-slate-900 text-white shadow-sm focus:border-rare-primary focus:ring focus:ring-rare-primary/20 sm:text-sm p-2 border"
+                                                className="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 text-gray-900 shadow-sm focus:border-rare-primary focus:ring focus:ring-rare-primary/20 sm:text-sm p-2 border"
                                             />
                                         </label>
                                         <div className="flex items-center gap-2 pt-2">
@@ -564,9 +564,9 @@ export function ProductEditor({ productId }: { productId: string | null }) {
                                                 name="in_stock"
                                                 checked={product.in_stock}
                                                 onChange={handleInputChange}
-                                                className="rounded border-slate-600 text-rare-primary focus:ring-rare-primary bg-slate-900"
+                                                className="rounded border-gray-300 text-rare-primary focus:ring-rare-primary bg-white"
                                             />
-                                            <label htmlFor="in_stock" className="text-sm text-slate-300 font-medium">In Stock</label>
+                                            <label htmlFor="in_stock" className="text-sm text-gray-700 font-medium">In Stock</label>
                                         </div>
                                     </div>
                                 )}
@@ -574,23 +574,23 @@ export function ProductEditor({ productId }: { productId: string | null }) {
                                 {activeTab === 'shipping' && (
                                     <div className="space-y-4 max-w-sm">
                                         <label className="block">
-                                            <span className="text-sm font-medium text-slate-300">Weight (kg)</span>
+                                            <span className="text-sm font-medium text-gray-700">Weight (kg)</span>
                                             <input
                                                 type="text"
                                                 name="weight"
                                                 value={product.weight || ''}
                                                 onChange={handleInputChange}
-                                                className="mt-1 block w-full rounded-md border-slate-600 bg-slate-900 text-white shadow-sm focus:border-rare-primary focus:ring focus:ring-rare-primary/20 sm:text-sm p-2 border"
+                                                className="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 text-gray-900 shadow-sm focus:border-rare-primary focus:ring focus:ring-rare-primary/20 sm:text-sm p-2 border"
                                             />
                                         </label>
                                         <label className="block">
-                                            <span className="text-sm font-medium text-slate-300">Dimensions (LxWxH cm)</span>
+                                            <span className="text-sm font-medium text-gray-700">Dimensions (LxWxH cm)</span>
                                             <input
                                                 type="text"
                                                 name="dimensions"
                                                 value={product.dimensions || ''}
                                                 onChange={handleInputChange}
-                                                className="mt-1 block w-full rounded-md border-slate-600 bg-slate-900 text-white shadow-sm focus:border-rare-primary focus:ring focus:ring-rare-primary/20 sm:text-sm p-2 border"
+                                                className="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 text-gray-900 shadow-sm focus:border-rare-primary focus:ring focus:ring-rare-primary/20 sm:text-sm p-2 border"
                                             />
                                         </label>
                                     </div>
@@ -605,24 +605,24 @@ export function ProductEditor({ productId }: { productId: string | null }) {
                                                 onChange={(e) => setFeatureInput(e.target.value)}
                                                 onKeyDown={(e) => e.key === 'Enter' && handleAddFeature()}
                                                 placeholder="Add a key feature (e.g., Premium quality materials)"
-                                                className="flex-1 text-sm border border-slate-600 bg-slate-900 text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-rare-primary"
+                                                className="flex-1 text-sm border border-gray-300 bg-gray-50 text-gray-900 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-rare-primary"
                                             />
                                             <button
                                                 onClick={handleAddFeature}
-                                                className="px-4 py-2 text-sm bg-slate-700 border border-slate-600 rounded-lg hover:bg-slate-600 text-white font-medium transition-colors"
+                                                className="px-4 py-2 text-sm bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 text-gray-700 font-medium transition-colors"
                                             >
                                                 Add
                                             </button>
                                         </div>
 
                                         {product.features && product.features.length > 0 ? (
-                                            <ul className="space-y-2 border border-slate-700 rounded-lg p-2 bg-slate-900/30">
+                                            <ul className="space-y-2 border border-gray-200 rounded-lg p-2 bg-gray-50">
                                                 {product.features.map((feature, index) => (
-                                                    <li key={index} className="flex items-center justify-between gap-3 bg-slate-800 p-2 rounded shadow-sm border border-slate-700">
-                                                        <span className="text-sm text-slate-200">{feature}</span>
+                                                    <li key={index} className="flex items-center justify-between gap-3 bg-white p-2 rounded shadow-sm border border-gray-200">
+                                                        <span className="text-sm text-gray-700">{feature}</span>
                                                         <button
                                                             onClick={() => handleRemoveFeature(index)}
-                                                            className="text-slate-400 hover:text-red-400 p-1 rounded-full hover:bg-red-900/20 transition-colors"
+                                                            className="text-gray-400 hover:text-red-500 p-1 rounded-full hover:bg-red-50 transition-colors"
                                                         >
                                                             <FiX size={14} />
                                                         </button>
@@ -630,7 +630,7 @@ export function ProductEditor({ productId }: { productId: string | null }) {
                                                 ))}
                                             </ul>
                                         ) : (
-                                            <div className="text-sm text-slate-500 italic text-center py-4 bg-slate-900/50 rounded-lg border border-dashed border-slate-700">
+                                            <div className="text-sm text-gray-400 italic text-center py-4 bg-gray-50 rounded-lg border border-dashed border-gray-300">
                                                 No features added yet. Add key selling points here.
                                             </div>
                                         )}
@@ -645,8 +645,8 @@ export function ProductEditor({ productId }: { productId: string | null }) {
                 <div className="w-full lg:w-80 space-y-6">
 
                     {/* Product Image */}
-                    <div className="bg-slate-800/80 backdrop-blur-md border border-slate-700 rounded-xl shadow-lg p-5">
-                        <h3 className="font-bold text-white border-b border-slate-700 pb-3 mb-3 text-sm uppercase tracking-wide">Featured Image</h3>
+                    <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-5">
+                        <h3 className="font-bold text-gray-900 border-b border-gray-200 pb-3 mb-3 text-sm uppercase tracking-wide">Featured Image</h3>
                         <input
                             type="file"
                             ref={featuredImageInputRef}
@@ -655,7 +655,7 @@ export function ProductEditor({ productId }: { productId: string | null }) {
                             onChange={handleFeaturedImageUpload}
                         />
                         {product.images.length > 0 ? (
-                            <div className="group relative rounded-lg overflow-hidden border border-slate-700">
+                            <div className="group relative rounded-lg overflow-hidden border border-gray-200">
                                 <img
                                     src={product.images[0]}
                                     alt="Product"
@@ -679,7 +679,7 @@ export function ProductEditor({ productId }: { productId: string | null }) {
                         ) : (
                             <button
                                 onClick={() => featuredImageInputRef.current?.click()}
-                                className="w-full aspect-square bg-slate-900 border-2 border-dashed border-slate-700 rounded-lg flex flex-col items-center justify-center text-slate-400 hover:text-rare-primary hover:border-rare-primary hover:bg-rare-primary/5 transition-all gap-2"
+                                className="w-full aspect-square bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center text-gray-400 hover:text-rare-primary hover:border-rare-primary hover:bg-rare-primary/5 transition-all gap-2"
                             >
                                 <FiImage size={32} />
                                 <span className="text-sm font-medium">Set product image</span>
@@ -689,22 +689,22 @@ export function ProductEditor({ productId }: { productId: string | null }) {
                     </div>
 
                     {/* Categories */}
-                    <div className="bg-slate-800/80 backdrop-blur-md border border-slate-700 rounded-xl shadow-lg p-5">
-                        <h3 className="font-bold text-white border-b border-slate-700 pb-3 mb-3 text-sm uppercase tracking-wide">Categories</h3>
-                        <div className="max-h-60 overflow-y-auto space-y-1 my-3 pr-2 scrollbar-thin scrollbar-thumb-slate-600">
+                    <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-5">
+                        <h3 className="font-bold text-gray-900 border-b border-gray-200 pb-3 mb-3 text-sm uppercase tracking-wide">Categories</h3>
+                        <div className="max-h-60 overflow-y-auto space-y-1 my-3 pr-2 scrollbar-thin scrollbar-thumb-gray-300">
                             {categories.map(cat => (
-                                <label key={cat._id} className="flex items-center gap-2.5 text-sm text-slate-300 cursor-pointer hover:bg-slate-700/50 p-1.5 rounded transition-colors select-none">
+                                <label key={cat._id} className="flex items-center gap-2.5 text-sm text-gray-700 cursor-pointer hover:bg-gray-50 p-1.5 rounded transition-colors select-none">
                                     <input
                                         type="radio"
                                         name="category"
                                         checked={product.category === cat.name}
                                         onChange={() => setProduct(p => ({ ...p, category: cat.name }))}
-                                        className="text-rare-primary focus:ring-rare-primary border-slate-600 bg-slate-900 w-4 h-4"
+                                        className="text-rare-primary focus:ring-rare-primary border-gray-300 bg-white w-4 h-4"
                                     />
                                     {cat.name}
                                 </label>
                             ))}
-                            {categories.length === 0 && <div className="text-sm text-slate-500 italic p-2">No categories found.</div>}
+                            {categories.length === 0 && <div className="text-sm text-gray-400 italic p-2">No categories found.</div>}
                         </div>
                         <button onClick={() => setIsCategoryModalOpen(true)} className="text-rare-primary text-sm font-medium hover:underline flex items-center gap-1 mt-2">
                             <FiPlus size={14} /> Add new category
@@ -713,17 +713,17 @@ export function ProductEditor({ productId }: { productId: string | null }) {
                         {/* Category Modal */}
                         {isCategoryModalOpen && (
                             <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-                                <div className="bg-slate-800 backdrop-blur-xl border border-slate-600 p-6 rounded-2xl shadow-2xl max-w-sm w-full space-y-4 animate-in zoom-in-95 duration-200">
-                                    <h3 className="text-lg font-heading font-bold text-white">New Category</h3>
+                                <div className="bg-white border border-gray-200 p-6 rounded-2xl shadow-2xl max-w-sm w-full space-y-4 animate-in zoom-in-95 duration-200">
+                                    <h3 className="text-lg font-heading font-bold text-gray-900">New Category</h3>
 
                                     <div>
-                                        <label className="block text-xs font-medium text-slate-400 mb-1">Category Name</label>
+                                        <label className="block text-xs font-medium text-gray-500 mb-1">Category Name</label>
                                         <input
                                             type="text"
                                             value={newCategoryName}
                                             onChange={(e) => setNewCategoryName(e.target.value)}
                                             placeholder="e.g., Potions"
-                                            className="w-full px-4 py-2 bg-slate-900 border border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-rare-primary/50 transition-all font-medium text-white placeholder-slate-500"
+                                            className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-rare-primary/50 transition-all font-medium text-gray-900 placeholder-gray-400"
                                             autoFocus
                                             onKeyDown={(e) => {
                                                 if (e.key === 'Enter') handleSaveCategory();
@@ -735,7 +735,7 @@ export function ProductEditor({ productId }: { productId: string | null }) {
                                     <div className="flex justify-end gap-2 pt-2">
                                         <button
                                             onClick={() => setIsCategoryModalOpen(false)}
-                                            className="px-4 py-2 text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-700/50 rounded-lg transition-colors"
+                                            className="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
                                         >
                                             Cancel
                                         </button>
@@ -752,8 +752,8 @@ export function ProductEditor({ productId }: { productId: string | null }) {
                     </div>
 
                     {/* Tags */}
-                    <div className="bg-slate-800/80 backdrop-blur-md border border-slate-700 rounded-xl shadow-lg p-5">
-                        <h3 className="font-bold text-white border-b border-slate-700 pb-3 mb-3 text-sm uppercase tracking-wide">Tags</h3>
+                    <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-5">
+                        <h3 className="font-bold text-gray-900 border-b border-gray-200 pb-3 mb-3 text-sm uppercase tracking-wide">Tags</h3>
                         <div className="flex gap-2">
                             <input
                                 type="text"
@@ -761,11 +761,11 @@ export function ProductEditor({ productId }: { productId: string | null }) {
                                 onChange={(e) => setTagInput(e.target.value)}
                                 onKeyDown={(e) => e.key === 'Enter' && handleAddTag()}
                                 placeholder="Separate with commas"
-                                className="flex-1 text-sm border border-slate-600 bg-slate-900 text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-rare-primary"
+                                className="flex-1 text-sm border border-gray-300 bg-gray-50 text-gray-900 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-rare-primary"
                             />
                             <button
                                 onClick={handleAddTag}
-                                className="px-3 py-2 text-sm bg-slate-700 border border-slate-600 rounded-lg hover:bg-slate-600 text-white font-medium transition-colors"
+                                className="px-3 py-2 text-sm bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 text-gray-700 font-medium transition-colors"
                             >
                                 Add
                             </button>
@@ -773,10 +773,10 @@ export function ProductEditor({ productId }: { productId: string | null }) {
                         {product.tags.length > 0 && (
                             <div className="flex flex-wrap gap-2 mt-4">
                                 {product.tags.map(tag => (
-                                    <span key={tag} className="bg-slate-700 text-slate-200 text-xs px-2 py-1 rounded-md flex items-center gap-1 border border-slate-600">
-                                        <FiTag size={10} className="text-slate-400" />
+                                    <span key={tag} className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded-md flex items-center gap-1 border border-gray-200">
+                                        <FiTag size={10} className="text-gray-400" />
                                         {tag}
-                                        <button onClick={() => setProduct(p => ({ ...p, tags: p.tags.filter(t => t !== tag) }))} className="hover:text-red-400 ml-1">
+                                        <button onClick={() => setProduct(p => ({ ...p, tags: p.tags.filter(t => t !== tag) }))} className="hover:text-red-500 ml-1">
                                             <FiX size={12} />
                                         </button>
                                     </span>
@@ -786,8 +786,8 @@ export function ProductEditor({ productId }: { productId: string | null }) {
                     </div>
 
                     {/* Product Gallery */}
-                    <div className="bg-slate-800/80 backdrop-blur-md border border-slate-700 rounded-xl shadow-lg p-5">
-                        <h3 className="font-bold text-white border-b border-slate-700 pb-3 mb-3 text-sm uppercase tracking-wide">Gallery</h3>
+                    <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-5">
+                        <h3 className="font-bold text-gray-900 border-b border-gray-200 pb-3 mb-3 text-sm uppercase tracking-wide">Gallery</h3>
                         <input
                             type="file"
                             ref={galleryImageInputRef}
@@ -798,7 +798,7 @@ export function ProductEditor({ productId }: { productId: string | null }) {
                         />
                         <div className="grid grid-cols-3 gap-2 mb-3">
                             {product.images.slice(1).map((img, i) => (
-                                <div key={i} className="aspect-square rounded border border-slate-700 overflow-hidden relative group">
+                                <div key={i} className="aspect-square rounded border border-gray-200 overflow-hidden relative group">
                                     <img src={img} className="w-full h-full object-cover" />
                                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                         <button
@@ -812,7 +812,7 @@ export function ProductEditor({ productId }: { productId: string | null }) {
                             ))}
                             <button
                                 onClick={() => galleryImageInputRef.current?.click()}
-                                className="aspect-square bg-slate-900 border border-dashed border-slate-700 rounded flex items-center justify-center text-slate-400 hover:text-rare-primary hover:border-rare-primary hover:bg-rare-primary/5 transition-all"
+                                className="aspect-square bg-gray-50 border border-dashed border-gray-300 rounded flex items-center justify-center text-gray-400 hover:text-rare-primary hover:border-rare-primary hover:bg-rare-primary/5 transition-all"
                             >
                                 <FiPlus size={24} />
                             </button>
@@ -824,14 +824,14 @@ export function ProductEditor({ productId }: { productId: string | null }) {
             {/* Message Modal */}
             {messageState.isOpen && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-slate-800 backdrop-blur-xl border border-slate-600 p-6 rounded-2xl shadow-2xl max-w-sm w-full space-y-4 animate-in zoom-in-95 duration-200">
-                        <div className={`w-12 h-12 rounded-full flex items-center justify-center mx-auto ${messageState.type === 'success' ? 'bg-green-900/30 text-green-400' : 'bg-red-900/30 text-red-600'}`}>
+                    <div className="bg-white border border-gray-200 p-6 rounded-2xl shadow-2xl max-w-sm w-full space-y-4 animate-in zoom-in-95 duration-200">
+                        <div className={`w-12 h-12 rounded-full flex items-center justify-center mx-auto ${messageState.type === 'success' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
                             {messageState.type === 'success' ? <FiBox size={24} /> : <FiX size={24} />}
                         </div>
 
                         <div className="text-center space-y-2">
-                            <h3 className="text-lg font-heading font-bold text-white">{messageState.title}</h3>
-                            <p className="text-sm text-slate-300">{messageState.message}</p>
+                            <h3 className="text-lg font-heading font-bold text-gray-900">{messageState.title}</h3>
+                            <p className="text-sm text-gray-600">{messageState.message}</p>
                         </div>
 
                         <div className="flex justify-center pt-2">

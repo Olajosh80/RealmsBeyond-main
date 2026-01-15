@@ -1,23 +1,44 @@
 "use client";
 
 import React, { useState } from "react";
-import { Header } from '@/components/layout/Header';
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 import { MdErrorOutline, MdCheckCircle, MdRemoveRedEye } from 'react-icons/md';
 import { FiCalendar, FiUser, FiMail, FiMapPin, FiPackage, FiSearch, FiFilter } from 'react-icons/fi';
 import { Button } from '@/components/ui/Button';
 import { useDebounce } from "@/hooks/useDebounce";
 
+interface OrderItem {
+    id: string;
+    product_name: string;
+    product_price: number;
+    quantity: number;
+    subtotal: number;
+}
+
+interface Order {
+    id: string;
+    customer_name: string;
+    customer_email: string;
+    customer_phone?: string;
+    shipping_address: string;
+    total_amount: number;
+    status: string;
+    payment_status: string;
+    created_at: string;
+    order_items: OrderItem[];
+    notes?: string;
+}
+
 interface OrdersContentProps {
-    initialOrders: any[];
+    initialOrders: Order[];
 }
 
 export default function OrdersContent({ initialOrders }: OrdersContentProps) {
-    const [orders, setOrders] = useState<any[]>(initialOrders);
+    const [orders, setOrders] = useState<Order[]>(initialOrders);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
-    const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
+    const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
     const [search, setSearch] = useState('');
     const debouncedSearch = useDebounce(search, 500);
 
@@ -44,9 +65,9 @@ export default function OrdersContent({ initialOrders }: OrdersContentProps) {
 
             setSuccess(`Order status updated to ${newStatus}`);
             setTimeout(() => setSuccess(null), 3000);
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Error updating order status:', err);
-            setError(err.message || 'Failed to update order status');
+            setError(err instanceof Error ? err.message : 'Failed to update order status');
         } finally {
             setLoading(false);
         }
@@ -75,9 +96,9 @@ export default function OrdersContent({ initialOrders }: OrdersContentProps) {
 
             setSuccess(`Payment status updated to ${newStatus}`);
             setTimeout(() => setSuccess(null), 3000);
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Error updating payment status:', err);
-            setError(err.message || 'Failed to update payment status');
+            setError(err instanceof Error ? err.message : 'Failed to update payment status');
         } finally {
             setLoading(false);
         }
@@ -85,21 +106,21 @@ export default function OrdersContent({ initialOrders }: OrdersContentProps) {
 
     const getStatusColor = (status: string) => {
         switch (status) {
-            case 'delivered': return 'bg-green-900/30 text-green-400 border-green-800';
-            case 'shipped': return 'bg-blue-900/30 text-blue-400 border-blue-800';
-            case 'processing': return 'bg-indigo-900/30 text-indigo-400 border-indigo-800';
-            case 'cancelled': return 'bg-red-900/30 text-red-400 border-red-800';
-            default: return 'bg-slate-700/50 text-slate-300 border-slate-600';
+            case 'delivered': return 'bg-green-50 text-green-600 border-green-200';
+            case 'shipped': return 'bg-blue-50 text-blue-600 border-blue-200';
+            case 'processing': return 'bg-indigo-50 text-indigo-600 border-indigo-200';
+            case 'cancelled': return 'bg-red-50 text-red-600 border-red-200';
+            default: return 'bg-gray-50 text-gray-600 border-gray-200';
         }
     };
 
     const getPaymentStatusColor = (status: string) => {
         switch (status) {
-            case 'paid': return 'bg-green-900/30 text-green-400 border-green-800';
-            case 'pending': return 'bg-amber-900/30 text-amber-400 border-amber-800';
-            case 'failed': return 'bg-red-900/30 text-red-400 border-red-800';
-            case 'refunded': return 'bg-purple-900/30 text-purple-400 border-purple-800';
-            default: return 'bg-slate-700/50 text-slate-300 border-slate-600';
+            case 'paid': return 'bg-green-50 text-green-600 border-green-200';
+            case 'pending': return 'bg-amber-50 text-amber-600 border-amber-200';
+            case 'failed': return 'bg-red-50 text-red-600 border-red-200';
+            case 'refunded': return 'bg-purple-50 text-purple-600 border-purple-200';
+            default: return 'bg-gray-50 text-gray-600 border-gray-200';
         }
     };
 
@@ -121,41 +142,40 @@ export default function OrdersContent({ initialOrders }: OrdersContentProps) {
     );
 
     return (
-        <div className="min-h-screen bg-slate-900 flex flex-col">
-            <Header />
-            <main className="flex-grow p-6 lg:p-10">
+        <div className="bg-gray-50 min-h-screen">
+            <main className="p-6 lg:p-10">
                 <div className="mx-auto space-y-6">
                     {/* Header */}
                     <div className="flex flex-col md:flex-row justify-between items-center gap-4">
                         <div>
-                            <h1 className="font-heading text-3xl font-bold text-white flex items-center gap-3">
+                            <h1 className="font-heading text-3xl font-bold text-gray-900 flex items-center gap-3">
                                 Orders
-                                <span className="text-sm font-normal text-slate-400 bg-slate-800 px-3 py-1 rounded-full border border-slate-700">
+                                <span className="text-sm font-normal text-gray-600 bg-white px-3 py-1 rounded-full border border-gray-200 shadow-sm">
                                     {orders.length} items
                                 </span>
                             </h1>
                         </div>
-                        {loading && <AiOutlineLoading3Quarters className="animate-spin text-rare-accent h-6 w-6" />}
+                        {loading && <AiOutlineLoading3Quarters className="animate-spin text-rare-primary h-6 w-6" />}
                     </div>
 
-                    {/* Filters & Search - Glassmorphism Toolbar */}
-                    <div className="bg-slate-800/50 backdrop-blur-md rounded-xl border border-slate-700 shadow-sm p-4 flex flex-col md:flex-row gap-4 justify-between items-center">
+                    {/* Filters & Search - Toolbar */}
+                    <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 flex flex-col md:flex-row gap-4 justify-between items-center">
                         <div className="flex gap-2 w-full md:w-auto">
                             {/* Potential Tab Filters here if needed */}
                         </div>
 
                         <div className="flex items-center gap-3 w-full md:w-auto">
                             <div className="relative group w-full md:w-64">
-                                <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-white transition-colors" />
+                                <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-rare-primary transition-colors" />
                                 <input
                                     type="text"
                                     placeholder="Search orders..."
                                     value={search}
                                     onChange={(e) => setSearch(e.target.value)}
-                                    className="w-full pl-10 pr-4 py-2 bg-slate-900/50 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:bg-slate-900 focus:ring-2 focus:ring-rare-accent/20 focus:outline-none transition-all"
+                                    className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 placeholder-gray-500 focus:bg-white focus:ring-2 focus:ring-rare-primary/20 focus:border-rare-primary focus:outline-none transition-all"
                                 />
                             </div>
-                            <Button variant="outline" className="hidden md:flex items-center gap-2 px-3 py-2 border-slate-600 text-slate-300 hover:bg-slate-800 hover:text-white">
+                            <Button variant="outline" className="hidden md:flex items-center gap-2 px-3 py-2">
                                 <FiFilter /> Filter
                             </Button>
                         </div>
@@ -163,23 +183,23 @@ export default function OrdersContent({ initialOrders }: OrdersContentProps) {
 
                     {/* Notifications */}
                     {error && (
-                        <div className="flex items-center gap-2 p-4 bg-red-900/20 border border-red-800 rounded-lg text-red-300 animate-in fade-in slide-in-from-top-2">
+                        <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 animate-in fade-in slide-in-from-top-2">
                             <MdErrorOutline className="h-5 w-5 flex-shrink-0" />
                             <p>{error}</p>
                         </div>
                     )}
                     {success && (
-                        <div className="flex items-center gap-2 p-4 bg-green-900/20 border border-green-800 rounded-lg text-green-300 animate-in fade-in slide-in-from-top-2">
+                        <div className="flex items-center gap-2 p-4 bg-green-50 border border-green-200 rounded-lg text-green-700 animate-in fade-in slide-in-from-top-2">
                             <MdCheckCircle className="h-5 w-5 flex-shrink-0" />
                             <p>{success}</p>
                         </div>
                     )}
 
                     {/* Orders Table */}
-                    <div className="bg-slate-800/50 backdrop-blur-md rounded-2xl border border-slate-700 shadow-xl overflow-hidden">
+                    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
                         <div className="overflow-x-auto">
                             <table className="w-full text-left">
-                                <thead className="bg-slate-900/50 border-b border-slate-700 text-xs uppercase text-slate-300 font-bold tracking-wider">
+                                <thead className="bg-gray-50 border-b border-gray-200 text-xs uppercase text-gray-600 font-bold tracking-wider">
                                     <tr>
                                         <th className="p-4">Order ID</th>
                                         <th className="p-4">Customer</th>
@@ -190,29 +210,29 @@ export default function OrdersContent({ initialOrders }: OrdersContentProps) {
                                         <th className="p-4 text-right">Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-slate-700/50">
+                                <tbody className="divide-y divide-gray-100">
                                     {filteredOrders.length === 0 ? (
                                         <tr>
-                                            <td colSpan={7} className="p-12 text-center text-slate-500 font-body">
+                                            <td colSpan={7} className="p-12 text-center text-gray-500 font-body">
                                                 No orders found matching your search.
                                             </td>
                                         </tr>
                                     ) : (
                                         filteredOrders.map((order) => (
-                                            <tr key={order.id} className="group hover:bg-slate-700/30 transition-colors">
+                                            <tr key={order.id} className="group hover:bg-gray-50 transition-colors">
                                                 <td className="p-4">
-                                                    <span className="font-mono text-xs text-slate-400 bg-slate-800/50 border border-slate-600 px-2 py-1 rounded">
+                                                    <span className="font-mono text-xs text-gray-600 bg-gray-100 border border-gray-200 px-2 py-1 rounded">
                                                         #{order.id.slice(-8)}
                                                     </span>
                                                 </td>
                                                 <td className="p-4 text-sm">
-                                                    <div className="font-bold text-slate-200">{order.customer_name}</div>
-                                                    <div className="text-slate-400 text-xs">{order.customer_email}</div>
+                                                    <div className="font-bold text-gray-900">{order.customer_name}</div>
+                                                    <div className="text-gray-500 text-xs">{order.customer_email}</div>
                                                 </td>
-                                                <td className="p-4 text-sm text-slate-400">
+                                                <td className="p-4 text-sm text-gray-500">
                                                     {formatDate(order.created_at)}
                                                 </td>
-                                                <td className="p-4 text-sm font-bold text-rare-accent">
+                                                <td className="p-4 text-sm font-bold text-rare-primary">
                                                     ₦{order.total_amount.toFixed(2)}
                                                 </td>
                                                 <td className="p-4">
@@ -243,7 +263,7 @@ export default function OrdersContent({ initialOrders }: OrdersContentProps) {
                                                 <td className="p-4 text-right">
                                                     <button
                                                         onClick={() => setSelectedOrder(order)}
-                                                        className="p-2 text-rare-accent hover:bg-slate-700 rounded-lg transition-all"
+                                                        className="p-2 text-rare-primary hover:bg-gray-100 rounded-lg transition-all"
                                                         title="View Details"
                                                     >
                                                         <MdRemoveRedEye className="h-5 w-5" />
@@ -261,16 +281,16 @@ export default function OrdersContent({ initialOrders }: OrdersContentProps) {
 
             {/* Order Details Modal */}
             {selectedOrder && (
-                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-slate-800 border border-slate-600 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col animate-in zoom-in-95 duration-200 text-slate-200">
-                        <div className="p-6 border-b border-slate-700 flex justify-between items-center bg-slate-900/30">
+                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/30 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white border border-gray-200 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col animate-in zoom-in-95 duration-200 text-gray-900">
+                        <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
                             <div>
-                                <h2 className="text-xl font-heading font-bold text-white">Order Details</h2>
-                                <p className="text-sm text-slate-400 font-mono">#{selectedOrder.id}</p>
+                                <h2 className="text-xl font-heading font-bold text-gray-900">Order Details</h2>
+                                <p className="text-sm text-gray-500 font-mono">#{selectedOrder.id}</p>
                             </div>
                             <button
                                 onClick={() => setSelectedOrder(null)}
-                                className="text-slate-500 hover:text-white transition-colors"
+                                className="text-gray-500 hover:text-gray-700 transition-colors"
                             >
                                 <span className="sr-only">Close</span>
                                 <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -282,53 +302,53 @@ export default function OrdersContent({ initialOrders }: OrdersContentProps) {
                         <div className="p-6 overflow-y-auto space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-4">
-                                    <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2 border-b border-slate-700 pb-2">
-                                        <FiUser className="text-rare-accent" /> Customer Info
+                                    <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider flex items-center gap-2 border-b border-gray-100 pb-2">
+                                        <FiUser className="text-rare-primary" /> Customer Info
                                     </h3>
                                     <div className="space-y-2 text-sm">
                                         <p className="flex flex-col">
-                                            <span className="text-xs text-slate-500">Name</span>
-                                            <span className="font-medium text-slate-200">{selectedOrder.customer_name}</span>
+                                            <span className="text-xs text-gray-500">Name</span>
+                                            <span className="font-medium text-gray-900">{selectedOrder.customer_name}</span>
                                         </p>
                                         <p className="flex flex-col">
-                                            <span className="text-xs text-slate-500">Email</span>
-                                            <span className="font-medium text-slate-200 flex items-center gap-1"><FiMail className="h-3 w-3" /> {selectedOrder.customer_email}</span>
+                                            <span className="text-xs text-gray-500">Email</span>
+                                            <span className="font-medium text-gray-900 flex items-center gap-1"><FiMail className="h-3 w-3" /> {selectedOrder.customer_email}</span>
                                         </p>
                                         {selectedOrder.customer_phone && (
                                             <p className="flex flex-col">
-                                                <span className="text-xs text-slate-500">Phone</span>
-                                                <span className="font-medium text-slate-200">{selectedOrder.customer_phone}</span>
+                                                <span className="text-xs text-gray-500">Phone</span>
+                                                <span className="font-medium text-gray-900">{selectedOrder.customer_phone}</span>
                                             </p>
                                         )}
                                     </div>
                                 </div>
                                 <div className="space-y-4">
-                                    <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2 border-b border-slate-700 pb-2">
-                                        <FiMapPin className="text-red-400" /> Shipping Info
+                                    <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider flex items-center gap-2 border-b border-gray-100 pb-2">
+                                        <FiMapPin className="text-red-500" /> Shipping Info
                                     </h3>
                                     <div className="space-y-2 text-sm">
                                         <p className="flex flex-col">
-                                            <span className="text-xs text-slate-500">Address</span>
-                                            <span className="font-medium text-slate-200 whitespace-pre-line leading-snug">{selectedOrder.shipping_address}</span>
+                                            <span className="text-xs text-gray-500">Address</span>
+                                            <span className="font-medium text-gray-900 whitespace-pre-line leading-snug">{selectedOrder.shipping_address}</span>
                                         </p>
                                     </div>
                                 </div>
                             </div>
 
                             <div className="space-y-4">
-                                <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2 border-b border-slate-700 pb-2">
-                                    <FiPackage className="text-blue-400" /> Order Items
+                                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider flex items-center gap-2 border-b border-gray-100 pb-2">
+                                    <FiPackage className="text-blue-500" /> Order Items
                                 </h3>
                                 <div className="space-y-2">
-                                    {selectedOrder.order_items?.map((item: any) => (
-                                        <div key={item.id} className="flex justify-between items-center p-3 bg-slate-700/50 border border-slate-600 rounded-lg hover:bg-slate-700 transition-colors">
+                                    {selectedOrder.order_items?.map((item: OrderItem) => (
+                                        <div key={item.id} className="flex justify-between items-center p-3 bg-gray-50 border border-gray-100 rounded-lg hover:bg-gray-100 transition-colors">
                                             <div className="flex-1">
-                                                <p className="text-sm font-bold text-slate-200">{item.product_name}</p>
-                                                <p className="text-xs text-slate-400">
+                                                <p className="text-sm font-bold text-gray-900">{item.product_name}</p>
+                                                <p className="text-xs text-gray-500">
                                                     {item.quantity} x ₦{item.product_price.toFixed(2)}
                                                 </p>
                                             </div>
-                                            <p className="text-sm font-mono font-bold text-white">
+                                            <p className="text-sm font-mono font-bold text-gray-900">
                                                 ₦{item.subtotal.toFixed(2)}
                                             </p>
                                         </div>
@@ -336,24 +356,24 @@ export default function OrdersContent({ initialOrders }: OrdersContentProps) {
                                 </div>
                             </div>
 
-                            <div className="bg-slate-700/30 p-4 rounded-xl flex justify-between items-center">
-                                <span className="font-bold text-slate-400">Total Amount</span>
-                                <span className="font-heading text-2xl font-bold text-rare-accent">₦{selectedOrder.total_amount.toFixed(2)}</span>
+                            <div className="bg-gray-50 p-4 rounded-xl flex justify-between items-center">
+                                <span className="font-bold text-gray-500">Total Amount</span>
+                                <span className="font-heading text-2xl font-bold text-rare-primary">₦{selectedOrder.total_amount.toFixed(2)}</span>
                             </div>
 
                             {selectedOrder.notes && (
-                                <div className="bg-yellow-900/20 p-4 rounded-xl border border-yellow-800/50">
-                                    <p className="text-xs font-bold text-yellow-500 uppercase mb-1">Order Notes</p>
-                                    <p className="text-sm text-yellow-200 italic">{selectedOrder.notes}</p>
+                                <div className="bg-yellow-50 p-4 rounded-xl border border-yellow-100">
+                                    <p className="text-xs font-bold text-yellow-600 uppercase mb-1">Order Notes</p>
+                                    <p className="text-sm text-yellow-800 italic">{selectedOrder.notes}</p>
                                 </div>
                             )}
                         </div>
 
-                        <div className="p-6 border-t border-slate-700 bg-slate-900/50 flex justify-end">
+                        <div className="p-6 border-t border-gray-100 bg-gray-50 flex justify-end">
                             <Button
                                 onClick={() => setSelectedOrder(null)}
                                 variant="outline"
-                                className="border-slate-600 text-slate-300 hover:bg-slate-700"
+                                className="border-gray-300 text-gray-600 hover:bg-white"
                             >
                                 Close Details
                             </Button>

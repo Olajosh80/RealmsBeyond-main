@@ -35,23 +35,23 @@ export function AdminSidebar() {
     const { settings } = useSiteSettings();
 
     return (
-        <div className="hidden lg:flex flex-col w-72 bg-slate-900/95 backdrop-blur-xl border-r border-slate-700 h-screen sticky top-0 shadow-2xl shadow-black/20">
-            <div className="p-8 border-b border-slate-700">
+        <div className="hidden lg:flex flex-col w-72 bg-white border-r border-gray-200 h-screen sticky top-0 shadow-lg">
+            <div className="p-8 border-b border-gray-200">
                 <Link href="/" className="flex items-center gap-4">
                     <img
                         src={settings?.logo_url || "/logo.png"}
                         alt={settings?.site_name || "Beyond Realms"}
-                        className="h-10 w-auto drop-shadow-md brightness-110"
+                        className="h-10 w-auto drop-shadow-sm"
                     />
                     <div className="flex flex-col">
-                        <span className="font-heading font-bold text-white text-lg tracking-wide leading-none">BEYOND</span>
-                        <span className="font-heading text-slate-400 text-xs tracking-[0.2em] mt-1">REALMS</span>
+                        <span className="font-heading font-bold text-rare-primary text-lg tracking-wide leading-none">BEYOND</span>
+                        <span className="font-heading text-gray-500 text-xs tracking-[0.2em] mt-1">REALMS</span>
                     </div>
                 </Link>
             </div>
 
             <nav className="flex-1 px-6 py-8 space-y-2 overflow-y-auto">
-                <p className="px-4 text-xs font-bold text-slate-500 uppercase tracking-widest mb-4">Menu</p>
+                <p className="px-4 text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">Menu</p>
                 {navigation.map((item) => {
                     const isActive = pathname === item.href || (item.children && pathname.startsWith(item.href));
                     const Icon = item.icon;
@@ -61,27 +61,29 @@ export function AdminSidebar() {
                             <Link
                                 href={item.href}
                                 className={`group flex items-center gap-4 px-4 py-3.5 rounded-xl text-sm font-medium transition-all duration-300 ${isActive && !item.children
-                                    ? 'bg-rare-accent text-slate-900 shadow-lg shadow-rare-accent/20 translate-x-1'
-                                    : 'text-slate-400 hover:bg-slate-800 hover:text-white hover:shadow-md'
-                                    } ${isActive && item.children ? 'bg-slate-800 text-white shadow-md' : ''}`}
+                                    // Active state: Light background, Primary color text
+                                    ? 'bg-rare-primary/10 text-rare-primary shadow-lg shadow-rare-primary/5 translate-x-1'
+                                    // Inactive state: Gray text, hover effect
+                                    : 'text-gray-600 hover:bg-gray-100 hover:text-rare-primary hover:shadow-sm'
+                                    } ${isActive && item.children ? 'bg-gray-100 text-rare-primary shadow-sm' : ''}`}
                             >
                                 <Icon className={`h-5 w-5 transition-transform duration-300 ${isActive ? 'scale-110' : 'group-hover:scale-110'}`} />
                                 <span className="font-body tracking-wide">{item.name}</span>
                                 {isActive && !item.children && (
-                                    <div className="ml-auto w-1.5 h-1.5 rounded-full bg-slate-900/50" />
+                                    <div className="ml-auto w-1.5 h-1.5 rounded-full bg-rare-primary/60" />
                                 )}
                             </Link>
 
                             {/* Submenu */}
                             {item.children && isActive && (
-                                <div className="mt-1 ml-4 pl-4 border-l-2 border-slate-700 space-y-1">
+                                <div className="mt-1 ml-4 pl-4 border-l-2 border-gray-200 space-y-1">
                                     {item.children.map(child => {
                                         const isChildActive = pathname === child.href;
                                         return (
                                             <Link
                                                 key={child.name}
                                                 href={child.href}
-                                                className={`block px-4 py-2 text-sm rounded-lg transition-colors ${isChildActive ? 'text-rare-accent font-bold bg-slate-800' : 'text-slate-500 hover:text-white hover:bg-slate-800/50'}`}
+                                                className={`block px-4 py-2 text-sm rounded-lg transition-colors ${isChildActive ? 'text-rare-primary font-bold bg-gray-100' : 'text-gray-500 hover:text-rare-primary hover:bg-gray-50'}`}
                                             >
                                                 {child.name}
                                             </Link>
@@ -94,12 +96,12 @@ export function AdminSidebar() {
                 })}
             </nav>
 
-            <div className="p-6 border-t border-slate-700 bg-gradient-to-t from-black/20 to-transparent">
+            <div className="p-6 border-t border-gray-200 bg-gray-50">
                 <button
                     onClick={signOut}
-                    className="group flex items-center gap-3 px-4 py-3.5 w-full rounded-xl text-sm font-medium text-red-400 hover:bg-red-900/20 hover:text-red-300 hover:shadow-inner transition-all duration-300"
+                    className="group flex items-center gap-3 px-4 py-3.5 w-full rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 hover:text-red-700 transition-all duration-300"
                 >
-                    <div className="p-2 rounded-lg bg-red-900/20 group-hover:bg-red-900/40 transition-colors">
+                    <div className="p-2 rounded-lg bg-red-100 group-hover:bg-red-200 transition-colors">
                         <FiLogOut className="h-4 w-4" />
                     </div>
                     <span className="font-body">Sign Out</span>

@@ -70,138 +70,138 @@ export default function AdminSettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 flex flex-col">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       <main className="flex-grow p-6 lg:p-10">
         <div className="mx-auto max-w-4xl space-y-6">
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-slate-800 rounded-xl text-white shadow-sm border border-slate-700">
+            <div className="p-3 bg-white rounded-xl text-rare-primary shadow-sm border border-gray-200">
               <FiSettings className="h-8 w-8" />
             </div>
             <div>
-              <h1 className="font-heading text-4xl font-bold text-white">
+              <h1 className="font-heading text-4xl font-bold text-gray-900">
                 Site Settings
               </h1>
-              <p className="font-body text-slate-400 mt-1">
+              <p className="font-body text-gray-500 mt-1">
                 Manage global website configuration
               </p>
             </div>
           </div>
 
           {message && (
-            <div className={`p-4 rounded-xl mb-6 border ${message.includes('Error') ? 'bg-red-900/20 text-red-300 border-red-800' : 'bg-green-900/20 text-green-300 border-green-800'}`}>
+            <div className={`p-4 rounded-xl mb-6 border ${message.includes('Error') ? 'bg-red-50 text-red-700 border-red-200' : 'bg-green-50 text-green-700 border-green-200'}`}>
               {message}
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-8">
             {/* General Settings */}
-            <div className="bg-slate-800/80 backdrop-blur-md rounded-2xl p-6 md:p-8 shadow-xl border border-slate-700">
-              <h2 className="font-heading text-2xl font-bold text-white mb-6 border-b border-slate-700 pb-4">General Information</h2>
+            <div className="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-gray-200">
+              <h2 className="font-heading text-2xl font-bold text-gray-900 mb-6 border-b border-gray-200 pb-4">General Information</h2>
               <div className="grid gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Site Name</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Site Name</label>
                   <input
                     type="text"
                     name="site_name"
                     value={formData.site_name || ''}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-rare-primary focus:border-transparent transition-all"
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-rare-primary/20 focus:border-rare-primary transition-all"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Logo URL</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Logo URL</label>
                   <input
                     type="text"
                     name="logo_url"
                     value={formData.logo_url || ''}
                     onChange={handleChange}
                     placeholder="/logo.png"
-                    className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-rare-primary focus:border-transparent transition-all"
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-rare-primary/20 focus:border-rare-primary transition-all"
                   />
                 </div>
               </div>
             </div>
 
             {/* Contact Information */}
-            <div className="bg-slate-800/80 backdrop-blur-md rounded-2xl p-6 md:p-8 shadow-xl border border-slate-700">
-              <h2 className="font-heading text-2xl font-bold text-white mb-6 border-b border-slate-700 pb-4">Contact Details</h2>
+            <div className="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-gray-200">
+              <h2 className="font-heading text-2xl font-bold text-gray-900 mb-6 border-b border-gray-200 pb-4">Contact Details</h2>
               <div className="grid gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Contact Email</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Contact Email</label>
                   <input
                     type="text"
                     name="contact_email"
                     value={formData.contact_email || ''}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-rare-primary focus:border-transparent transition-all"
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-rare-primary/20 focus:border-rare-primary transition-all"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Contact Phone</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Contact Phone</label>
                   <input
                     type="text"
                     name="contact_phone"
                     value={formData.contact_phone || ''}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-rare-primary focus:border-transparent transition-all"
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-rare-primary/20 focus:border-rare-primary transition-all"
                   />
                 </div>
                 <div className="w-full">
-                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Address
                   </label>
                   <textarea
                     name="address"
                     value={formData.address || ''}
                     onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
-                    className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg font-body text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-rare-primary focus:border-transparent transition-all min-h-[100px]"
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg font-body text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-rare-primary/20 focus:border-rare-primary transition-all min-h-[100px]"
                   />
                 </div>
               </div>
             </div>
 
             {/* Social Media */}
-            <div className="bg-slate-800/80 backdrop-blur-md rounded-2xl p-6 md:p-8 shadow-xl border border-slate-700">
-              <h2 className="font-heading text-2xl font-bold text-white mb-6 border-b border-slate-700 pb-4">Social Media Links</h2>
+            <div className="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-gray-200">
+              <h2 className="font-heading text-2xl font-bold text-gray-900 mb-6 border-b border-gray-200 pb-4">Social Media Links</h2>
               <div className="grid gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Facebook URL</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Facebook URL</label>
                   <input
                     type="text"
                     name="social_facebook"
                     value={formData.social_facebook || ''}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-rare-primary focus:border-transparent transition-all"
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-rare-primary/20 focus:border-rare-primary transition-all"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Twitter URL</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Twitter URL</label>
                   <input
                     type="text"
                     name="social_twitter"
                     value={formData.social_twitter || ''}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-rare-primary focus:border-transparent transition-all"
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-rare-primary/20 focus:border-rare-primary transition-all"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Instagram URL</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Instagram URL</label>
                   <input
                     type="text"
                     name="social_instagram"
                     value={formData.social_instagram || ''}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-rare-primary focus:border-transparent transition-all"
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-rare-primary/20 focus:border-rare-primary transition-all"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">LinkedIn URL</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">LinkedIn URL</label>
                   <input
                     type="text"
                     name="social_linkedin"
                     value={formData.social_linkedin || ''}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-rare-primary focus:border-transparent transition-all"
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-rare-primary/20 focus:border-rare-primary transition-all"
                   />
                 </div>
               </div>

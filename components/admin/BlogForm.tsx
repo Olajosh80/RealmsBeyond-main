@@ -149,12 +149,12 @@ export default function BlogForm({ initialData, isEditing = false }: BlogFormPro
     return (
         <form onSubmit={handleSubmit} className="space-y-8 max-w-5xl mx-auto pb-10">
             {/* Header */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-700 pb-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-200 pb-6">
                 <div>
-                    <h1 className="text-3xl font-heading font-bold text-white">
+                    <h1 className="text-3xl font-heading font-bold text-gray-900">
                         {isEditing ? 'Edit Blog Post' : 'Create New Blog Post'}
                     </h1>
-                    <p className="text-slate-400 mt-1">
+                    <p className="text-gray-500 mt-1">
                         {isEditing ? 'Update your existing article.' : 'Share a new insight with the world.'}
                     </p>
                 </div>
@@ -163,7 +163,7 @@ export default function BlogForm({ initialData, isEditing = false }: BlogFormPro
                         variant="outline"
                         type="button"
                         onClick={() => router.back()}
-                        className="flex-1 sm:flex-none justify-center border-slate-600 text-slate-300 hover:bg-slate-800 hover:text-white"
+                        className="flex-1 sm:flex-none justify-center border-gray-300 text-gray-600 hover:bg-gray-100 hover:text-gray-900"
                     >
                         Cancel
                     </Button>
@@ -189,7 +189,7 @@ export default function BlogForm({ initialData, isEditing = false }: BlogFormPro
             </div>
 
             {error && (
-                <div className="p-4 bg-red-900/20 text-red-300 border border-red-800 rounded-lg flex items-center gap-2">
+                <div className="p-4 bg-red-50 text-red-600 border border-red-200 rounded-lg flex items-center gap-2">
                     <FiX className="w-5 h-5" />
                     {error}
                 </div>
@@ -199,11 +199,11 @@ export default function BlogForm({ initialData, isEditing = false }: BlogFormPro
                 {/* Main Content Column */}
                 <div className="lg:col-span-2 space-y-6">
                     {/* General Info Card */}
-                    <div className="p-6 bg-slate-800 border border-slate-700 rounded-xl shadow-xl space-y-6">
-                        <h2 className="text-lg font-bold text-white border-b border-slate-700 pb-3">General Information</h2>
+                    <div className="p-6 bg-white border border-gray-200 rounded-xl shadow-sm space-y-6">
+                        <h2 className="text-lg font-bold text-gray-900 border-b border-gray-200 pb-3">General Information</h2>
 
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-300">Post Title</label>
+                            <label className="text-sm font-medium text-gray-700">Post Title</label>
                             <input
                                 name="title"
                                 type="text"
@@ -211,41 +211,41 @@ export default function BlogForm({ initialData, isEditing = false }: BlogFormPro
                                 onChange={handleChange}
                                 placeholder="e.g. The Future of Logistics in 2026"
                                 required
-                                className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-rare-primary focus:border-transparent transition-all"
+                                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-rare-primary focus:border-transparent transition-all"
                             />
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-300">Slug (Optional)</label>
+                            <label className="text-sm font-medium text-gray-700">Slug (Optional)</label>
                             <input
                                 name="slug"
                                 type="text"
                                 value={formData.slug}
                                 onChange={handleChange}
                                 placeholder="the-future-of-logistics-2026"
-                                className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-rare-primary focus:border-transparent transition-all"
+                                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-rare-primary focus:border-transparent transition-all"
                             />
-                            <p className="text-xs text-slate-500">Leave blank to auto-generate from title.</p>
+                            <p className="text-xs text-gray-500">Leave blank to auto-generate from title.</p>
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-300">Excerpt / Short Description</label>
+                            <label className="text-sm font-medium text-gray-700">Excerpt / Short Description</label>
                             <textarea
                                 name="excerpt"
                                 value={formData.excerpt}
                                 onChange={handleChange}
-                                className="w-full min-h-[100px] p-3 rounded-lg bg-slate-900 border border-slate-700 text-white placeholder-slate-500 focus:ring-2 focus:ring-rare-primary focus:border-transparent outline-none transition-all"
+                                className="w-full min-h-[100px] p-3 rounded-lg bg-gray-50 border border-gray-200 text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-rare-primary focus:border-transparent outline-none transition-all"
                                 placeholder="A brief summary of what this article is about..."
                             />
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-300">Content</label>
+                            <label className="text-sm font-medium text-gray-700">Content</label>
                             <textarea
                                 name="content"
                                 value={formData.content}
                                 onChange={handleChange}
-                                className="w-full min-h-[400px] p-3 rounded-lg bg-slate-900 border border-slate-700 text-white placeholder-slate-500 focus:ring-2 focus:ring-rare-primary focus:border-transparent outline-none transition-all font-mono text-sm"
+                                className="w-full min-h-[400px] p-3 rounded-lg bg-gray-50 border border-gray-200 text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-rare-primary focus:border-transparent outline-none transition-all font-mono text-sm"
                                 placeholder="Write your article content here (Markdown or HTML supported)..."
                                 required
                             />
@@ -256,16 +256,16 @@ export default function BlogForm({ initialData, isEditing = false }: BlogFormPro
                 {/* Sidebar Column */}
                 <div className="space-y-6">
                     {/* Organization Card */}
-                    <div className="p-6 bg-slate-800 border border-slate-700 rounded-xl shadow-xl space-y-6">
-                        <h2 className="text-lg font-bold text-white border-b border-slate-700 pb-3">Organization</h2>
+                    <div className="p-6 bg-white border border-gray-200 rounded-xl shadow-sm space-y-6">
+                        <h2 className="text-lg font-bold text-gray-900 border-b border-gray-200 pb-3">Organization</h2>
 
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-300">Status</label>
+                            <label className="text-sm font-medium text-gray-700">Status</label>
                             <select
                                 name="status"
                                 value={formData.status}
                                 onChange={handleChange}
-                                className="w-full p-2.5 bg-slate-900 border border-slate-700 rounded-lg outline-none focus:ring-2 focus:ring-rare-primary focus:border-transparent text-white"
+                                className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-rare-primary focus:border-transparent text-gray-900"
                             >
                                 <option value="draft">Draft</option>
                                 <option value="published">Published</option>
@@ -273,49 +273,49 @@ export default function BlogForm({ initialData, isEditing = false }: BlogFormPro
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-300">Category</label>
+                            <label className="text-sm font-medium text-gray-700">Category</label>
                             <input
                                 name="category"
                                 type="text"
                                 value={formData.category}
                                 onChange={handleChange}
                                 placeholder="e.g. Technology"
-                                className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-rare-primary focus:border-transparent transition-all"
+                                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-rare-primary focus:border-transparent transition-all"
                             />
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-300">Tags (comma separated)</label>
+                            <label className="text-sm font-medium text-gray-700">Tags (comma separated)</label>
                             <input
                                 name="tags"
                                 type="text"
                                 value={formData.tags}
                                 onChange={handleChange}
                                 placeholder="news, update, featured"
-                                className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-rare-primary focus:border-transparent transition-all"
+                                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-rare-primary focus:border-transparent transition-all"
                             />
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-300">Author</label>
+                            <label className="text-sm font-medium text-gray-700">Author</label>
                             <input
                                 name="author"
                                 type="text"
                                 value={formData.author}
                                 onChange={handleChange}
                                 placeholder="Author Name"
-                                className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-rare-primary focus:border-transparent transition-all"
+                                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-rare-primary focus:border-transparent transition-all"
                             />
                         </div>
                     </div>
 
                     {/* Featured Image Card */}
-                    <div className="p-6 bg-slate-800 border border-slate-700 rounded-xl shadow-xl space-y-6">
-                        <h2 className="text-lg font-bold text-white border-b border-slate-700 pb-3">Featured Image</h2>
+                    <div className="p-6 bg-white border border-gray-200 rounded-xl shadow-sm space-y-6">
+                        <h2 className="text-lg font-bold text-gray-900 border-b border-gray-200 pb-3">Featured Image</h2>
 
                         <div className="space-y-4">
                             {formData.featured_image ? (
-                                <div className="relative aspect-video rounded-lg overflow-hidden border border-slate-700 group">
+                                <div className="relative aspect-video rounded-lg overflow-hidden border border-gray-200 group">
                                     <img
                                         src={formData.featured_image}
                                         alt="Featured"
@@ -332,7 +332,7 @@ export default function BlogForm({ initialData, isEditing = false }: BlogFormPro
                                     </div>
                                 </div>
                             ) : (
-                                <div className="aspect-video rounded-lg border-2 border-dashed border-slate-700 flex flex-col items-center justify-center text-slate-500 bg-slate-900/50">
+                                <div className="aspect-video rounded-lg border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-400 bg-gray-50">
                                     <FiImage className="w-8 h-8 mb-2" />
                                     <span className="text-sm">No image selected</span>
                                 </div>
@@ -350,8 +350,8 @@ export default function BlogForm({ initialData, isEditing = false }: BlogFormPro
                                 <label
                                     htmlFor="featured-image"
                                     className={`w-full flex items-center justify-center gap-2 py-2.5 border rounded-lg cursor-pointer transition-all ${uploading
-                                        ? 'bg-slate-800 text-slate-500 border-slate-700 cursor-not-allowed'
-                                        : 'bg-slate-800 text-slate-300 border-slate-600 hover:bg-slate-700 hover:text-white'
+                                        ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                                        : 'bg-gray-50 text-gray-600 border-gray-300 hover:bg-gray-100 hover:text-gray-900'
                                         }`}
                                 >
                                     {uploading ? (

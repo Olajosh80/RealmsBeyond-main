@@ -129,39 +129,41 @@ export default function GoodsPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="p-6 bg-white/40 backdrop-blur-md rounded-2xl border border-white/20 shadow-xl">
-        <h1 className="text-4xl font-heading font-normal text-rare-primary mb-2">Manage Products</h1>
-        <p className="text-rare-text-light font-body">Catalog and inventory management system.</p>
+    <div className="bg-gray-50 min-h-screen p-6 lg:p-10">
+      <div className="space-y-6">
+        <div className="p-6 bg-white rounded-2xl border border-gray-200 shadow-sm">
+          <h1 className="text-4xl font-heading font-bold text-gray-900 mb-2">Manage Products</h1>
+          <p className="text-gray-500 font-body">Catalog and inventory management system.</p>
+        </div>
+
+        {/* Error Message */}
+        {error && (
+          <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+            <MdErrorOutline className="h-5 w-5 flex-shrink-0" />
+            <p>{error}</p>
+          </div>
+        )}
+
+        {/* Success Message */}
+        {success && (
+          <div className="flex items-center gap-2 p-4 bg-green-50 border border-green-200 rounded-lg text-green-700">
+            <MdCheckCircle className="h-5 w-5 flex-shrink-0" />
+            <p>{success}</p>
+          </div>
+        )}
+
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-12">
+            <AiOutlineLoading3Quarters className="h-8 w-8 animate-spin text-rare-primary mb-2" />
+            <p className="text-gray-600">Loading products...</p>
+          </div>
+        ) : (
+          <div className="grid gap-8 md:grid-cols-2">
+            <AddGoodsForm onAddGood={handleAddGood} isSubmitting={actionLoading} />
+            <GoodsTable goods={goods} onDelete={handleDeleteGood} isDeleting={actionLoading} />
+          </div>
+        )}
       </div>
-
-      {/* Error Message */}
-      {error && (
-        <div className="flex items-center gap-2 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-400">
-          <MdErrorOutline className="h-5 w-5 flex-shrink-0" />
-          <p>{error}</p>
-        </div>
-      )}
-
-      {/* Success Message */}
-      {success && (
-        <div className="flex items-center gap-2 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg text-green-700 dark:text-green-400">
-          <MdCheckCircle className="h-5 w-5 flex-shrink-0" />
-          <p>{success}</p>
-        </div>
-      )}
-
-      {loading ? (
-        <div className="flex flex-col items-center justify-center py-12">
-          <AiOutlineLoading3Quarters className="h-8 w-8 animate-spin text-blue-600 mb-2" />
-          <p className="text-gray-600 dark:text-gray-400">Loading products...</p>
-        </div>
-      ) : (
-        <div className="grid gap-8 md:grid-cols-2">
-          <AddGoodsForm onAddGood={handleAddGood} isSubmitting={actionLoading} />
-          <GoodsTable goods={goods} onDelete={handleDeleteGood} isDeleting={actionLoading} />
-        </div>
-      )}
     </div>
   );
 }

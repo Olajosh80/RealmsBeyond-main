@@ -81,77 +81,79 @@ export default function AdminDivisions() {
   }
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto">
-      <div className="p-6 bg-white/40 backdrop-blur-md rounded-2xl border border-white/20 shadow-xl flex items-center justify-between">
-        <div>
-          <h2 className="text-4xl font-heading font-normal text-rare-primary mb-2">Manage Categories</h2>
-          <p className="text-rare-text-light font-body">Organize your business divisions and sectors.</p>
+    <div className="bg-gray-50 min-h-screen p-6 lg:p-10">
+      <div className="space-y-6 max-w-5xl mx-auto">
+        <div className="p-6 bg-white rounded-2xl border border-gray-200 shadow-sm flex items-center justify-between">
+          <div>
+            <h2 className="text-4xl font-heading font-bold text-gray-900 mb-2">Manage Categories</h2>
+            <p className="text-gray-500 font-body">Organize your business divisions and sectors.</p>
+          </div>
+          <button onClick={resetForm} className="flex items-center gap-2 bg-rare-primary hover:bg-rare-primary/90 text-white px-4 py-2 rounded-xl transition-all shadow-lg font-body font-bold">
+            <MdAdd className="text-xl" /> New Division
+          </button>
         </div>
-        <button onClick={resetForm} className="flex items-center gap-2 bg-blue-600/80 hover:bg-blue-600 text-white px-4 py-2 rounded-xl transition-all shadow-lg font-body">
-          <MdAdd className="text-xl" /> New Division
-        </button>
-      </div>
 
-      <form onSubmit={handleSubmit} className="p-6 bg-white/40 backdrop-blur-md rounded-2xl border border-white/20 shadow-xl space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="space-y-1">
-            <label className="text-xs font-body text-rare-text-light ml-1">Division Name</label>
-            <input type="text" placeholder="e.g. Luxury Fragrance" value={form.name || ''} onChange={(e)=>setForm({...form, name:e.target.value})} className="w-full bg-white/50 border border-white/30 p-2 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition" required />
+        <form onSubmit={handleSubmit} className="p-6 bg-white rounded-2xl border border-gray-200 shadow-sm space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-gray-500 uppercase ml-1">Division Name</label>
+              <input type="text" placeholder="e.g. Luxury Fragrance" value={form.name || ''} onChange={(e) => setForm({ ...form, name: e.target.value })} className="w-full bg-gray-50 border border-gray-200 p-2 rounded-lg focus:ring-2 focus:ring-rare-primary/50 outline-none transition text-gray-900 placeholder-gray-400" required />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-gray-500 uppercase ml-1">Slug (URL friendly)</label>
+              <input type="text" placeholder="e.g. luxury-fragrance" value={form.slug || ''} onChange={(e) => setForm({ ...form, slug: e.target.value })} className="w-full bg-gray-50 border border-gray-200 p-2 rounded-lg focus:ring-2 focus:ring-rare-primary/50 outline-none transition text-gray-900 placeholder-gray-400" required />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-gray-500 uppercase ml-1">Display Order</label>
+              <input type="number" placeholder="Order" value={form.order ?? 0} onChange={(e) => setForm({ ...form, order: Number(e.target.value) })} className="w-full bg-gray-50 border border-gray-200 p-2 rounded-lg focus:ring-2 focus:ring-rare-primary/50 outline-none transition text-gray-900 placeholder-gray-400" />
+            </div>
           </div>
           <div className="space-y-1">
-            <label className="text-xs font-body text-rare-text-light ml-1">Slug (URL friendly)</label>
-            <input type="text" placeholder="e.g. luxury-fragrance" value={form.slug || ''} onChange={(e)=>setForm({...form, slug:e.target.value})} className="w-full bg-white/50 border border-white/30 p-2 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition" required />
+            <label className="text-xs font-bold text-gray-500 uppercase ml-1">Description</label>
+            <textarea placeholder="Tell us more about this division..." value={form.description || ''} onChange={(e) => setForm({ ...form, description: e.target.value })} className="w-full bg-gray-50 border border-gray-200 p-2 rounded-lg h-24 focus:ring-2 focus:ring-rare-primary/50 outline-none transition text-gray-900 placeholder-gray-400" />
           </div>
-          <div className="space-y-1">
-            <label className="text-xs font-body text-rare-text-light ml-1">Display Order</label>
-            <input type="number" placeholder="Order" value={form.order ?? 0} onChange={(e)=>setForm({...form, order: Number(e.target.value)})} className="w-full bg-white/50 border border-white/30 p-2 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition" />
+          <div className="flex justify-end">
+            <button className="bg-rare-primary hover:bg-rare-primary/90 text-white rounded-xl px-8 py-2 transition-all shadow-md font-body font-bold">{editingId ? 'Update Division' : 'Create Division'}</button>
           </div>
-        </div>
-        <div className="space-y-1">
-          <label className="text-xs font-body text-rare-text-light ml-1">Description</label>
-          <textarea placeholder="Tell us more about this division..." value={form.description || ''} onChange={(e)=>setForm({...form, description:e.target.value})} className="w-full bg-white/50 border border-white/30 p-2 rounded-lg h-24 focus:ring-2 focus:ring-blue-500 outline-none transition" />
-        </div>
-        <div className="flex justify-end">
-          <button className="bg-green-600/80 hover:bg-green-600 text-white rounded-xl px-8 py-2 transition-all shadow-md font-body">{editingId? 'Update Division' : 'Create Division'}</button>
-        </div>
-      </form>
+        </form>
 
-      <div className="bg-white/40 backdrop-blur-md rounded-2xl border border-white/20 shadow-xl overflow-hidden">
-        <table className="w-full text-left">
-          <thead className="bg-white/20 backdrop-blur-sm border-b border-white/10">
-            <tr>
-              <th className="p-4 font-heading font-normal text-rare-primary">Name</th>
-              <th className="p-4 font-heading font-normal text-rare-primary">Slug</th>
-              <th className="p-4 font-heading font-normal text-rare-primary text-center">Order</th>
-              <th className="p-4 font-heading font-normal text-rare-primary text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-white/5">
-            {loading ? (
-              <tr><td className="p-8 text-center" colSpan={4}><AiOutlineLoading3Quarters className="animate-spin inline-block mr-2" /> Loading categories...</td></tr>
-            ) : divisions.length === 0 ? (
-              <tr><td className="p-8 text-center text-rare-text-light" colSpan={4}>No categories found</td></tr>
-            ) : (
-              divisions.map((d) => (
-                <tr key={d.id} className="hover:bg-white/10 transition-colors">
-                  <td className="p-4 align-middle font-medium text-rare-primary">{d.name}</td>
-                  <td className="p-4 align-middle text-rare-text-light font-mono text-sm">{d.slug}</td>
-                  <td className="p-4 align-middle text-center text-rare-text-light">{d.order ?? 0}</td>
-                  <td className="p-4 align-middle text-right">
-                    <div className="flex justify-end gap-2">
-                      <button onClick={()=>startEdit(d)} className="p-2 bg-yellow-500/80 hover:bg-yellow-500 text-white rounded-lg transition-all shadow-sm">
-                        <MdEdit />
-                      </button>
-                      <button onClick={()=>handleDelete(d.id)} className="p-2 bg-red-600/80 hover:bg-red-600 text-white rounded-lg transition-all shadow-sm">
-                        <MdDelete />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+          <table className="w-full text-left">
+            <thead className="bg-gray-50 border-b border-gray-200">
+              <tr>
+                <th className="p-4 font-heading font-bold text-gray-900 uppercase text-xs tracking-wider">Name</th>
+                <th className="p-4 font-heading font-bold text-gray-900 uppercase text-xs tracking-wider">Slug</th>
+                <th className="p-4 font-heading font-bold text-gray-900 uppercase text-xs tracking-wider text-center">Order</th>
+                <th className="p-4 font-heading font-bold text-gray-900 uppercase text-xs tracking-wider text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {loading ? (
+                <tr><td className="p-8 text-center" colSpan={4}><AiOutlineLoading3Quarters className="animate-spin inline-block mr-2 text-rare-primary" /> Loading categories...</td></tr>
+              ) : divisions.length === 0 ? (
+                <tr><td className="p-8 text-center text-gray-500" colSpan={4}>No categories found</td></tr>
+              ) : (
+                divisions.map((d) => (
+                  <tr key={d.id} className="hover:bg-gray-50 transition-colors">
+                    <td className="p-4 align-middle font-bold text-gray-900">{d.name}</td>
+                    <td className="p-4 align-middle text-gray-500 font-mono text-sm">{d.slug}</td>
+                    <td className="p-4 align-middle text-center text-gray-600 font-medium">{d.order ?? 0}</td>
+                    <td className="p-4 align-middle text-right">
+                      <div className="flex justify-end gap-2">
+                        <button onClick={() => startEdit(d)} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-all">
+                          <MdEdit className="w-5 h-5" />
+                        </button>
+                        <button onClick={() => handleDelete(d.id)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-all">
+                          <MdDelete className="w-5 h-5" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
