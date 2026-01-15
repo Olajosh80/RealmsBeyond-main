@@ -4,7 +4,6 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { Header } from '@/components/layout/Header';
-import { Header } from '@/components/layout/Header';
 import { FiMail, FiCalendar, FiUser, FiPhone, FiMessageSquare } from 'react-icons/fi';
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 
@@ -57,7 +56,7 @@ export default function AdminContactPage() {
     }
 
     return (
-    return (
+
         <div className="min-h-screen bg-slate-900 flex flex-col">
             <Header />
             <main className="flex-grow p-6 lg:p-10">

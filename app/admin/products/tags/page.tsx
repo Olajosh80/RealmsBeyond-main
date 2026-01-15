@@ -6,27 +6,36 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { FiEdit2, FiTrash2, FiSearch } from 'react-icons/fi';
 
+interface Tag {
+    _id: string;
+    name: string;
+    slug: string;
+    description?: string;
+    count: number;
+}
+
 // Mock Data
-const MOCK_TAGS = [
-    { _id: '1', name: 'Healing', slug: 'healing', count: 42 },
-    { _id: '2', name: 'Meditation', slug: 'meditation', count: 28 },
-    { _id: '3', name: 'Protection', slug: 'protection', count: 15 },
-    { _id: '4', name: 'Love', slug: 'love', count: 35 },
-    { _id: '5', name: 'New Arrival', slug: 'new-arrival', count: 10 },
+const MOCK_TAGS: Tag[] = [
+    { _id: '1', name: 'Healing', slug: 'healing', count: 42, description: 'Products for healing' },
+    { _id: '2', name: 'Meditation', slug: 'meditation', count: 28, description: 'Meditation aids' },
+    { _id: '3', name: 'Protection', slug: 'protection', count: 15, description: 'Protection items' },
+    { _id: '4', name: 'Love', slug: 'love', count: 35, description: 'Love related items' },
+    { _id: '5', name: 'New Arrival', slug: 'new-arrival', count: 10, description: 'Newly arrived items' },
 ];
 
 export default function ProductTagsPage() {
-    const [tags, setTags] = useState(MOCK_TAGS);
+    const [tags, setTags] = useState<Tag[]>(MOCK_TAGS);
     const [name, setName] = useState('');
     const [slug, setSlug] = useState('');
     const [description, setDescription] = useState('');
 
     const handleAdd = (e: React.FormEvent) => {
         e.preventDefault();
-        const newTag = {
+        const newTag: Tag = {
             _id: Math.random().toString(),
             name,
             slug: slug || name.toLowerCase().replace(/\s+/g, '-'),
+            description,
             count: 0
         };
         setTags([...tags, newTag]);

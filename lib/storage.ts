@@ -1,3 +1,5 @@
+'use server';
+
 import { uploadToCloudinary } from './cloudinary';
 
 export interface UploadResult {
