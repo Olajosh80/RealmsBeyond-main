@@ -67,7 +67,6 @@ export const Header: React.FC = () => {
         const response = await fetch(`/api/products?search=${encodeURIComponent(debouncedSearchQuery)}&limit=5`);
         if (response.ok) {
           const data = await response.json();
-          // Handle both paginated and non-paginated responses
           setSearchResults(data.products || data);
         }
       } catch (error) {
@@ -103,7 +102,7 @@ export const Header: React.FC = () => {
   return (
     <header
       className={`sticky top-0 z-50 border-b transition-all duration-500 ${isScrolled
-        ? 'bg-gradient-blue border-rare-border/30 shadow-md' // midnight blue
+        ? 'bg-gradient-blue border-rare-border/30 shadow-md'
         : 'bg-rare-background border-rare-border/20'
         }`}
     >
@@ -148,7 +147,7 @@ export const Header: React.FC = () => {
                 alt={settings?.site_name || "Beyond Realms Logo"}
                 className={`h-10 w-auto transition-all duration-300 ${isScrolled
                   ? 'brightness-200'
-                  : 'brightness-0' // Force black/dark if background is light
+                  : 'brightness-0'
                   }`}
               />
             </Link>
@@ -227,9 +226,7 @@ export const Header: React.FC = () => {
                     ) : (
                       <div
                         className={`h-8 w-8 rounded-full flex items-center justify-center font-body font-semibold text-xs border-2 transition-colors ${isScrolled
-                          // Scrolled: White background, Dark text (High Contrast on Blue header)
                           ? 'bg-white text-rare-primary border-transparent'
-                          // Unscrolled: Transparent background, Dark text, Dark Border (Matches Search/Cart icons)
                           : 'bg-transparent text-rare-primary border-rare-primary'
                           }`}
                       >
@@ -257,9 +254,9 @@ export const Header: React.FC = () => {
             ) : (
               <Link
                 href="/signin"
-                className={`px-4 py-2 rounded-lg text-xs font-body font-normal tracking-rare-nav uppercase transition-colors border ${isScrolled
-                  ? 'bg-white text-rare-primary hover:bg-white/90 border-white'
-                  : 'bg-transparent text-rare-primary hover:bg-rare-primary hover:text-white border-rare-primary'
+                className={`px-4 py-2 rounded-lg text-xs font-body font-normal tracking-rare-nav uppercase transition-colors border-2 ${isScrolled
+                  ? 'bg-white text-rare-primary border-white hover:bg-gray-100'
+                  : 'bg-transparent text-rare-primary border-rare-primary hover:bg-rare-primary/10'
                   }`}
               >
                 Sign In
