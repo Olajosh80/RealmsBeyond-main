@@ -1,36 +1,43 @@
 import { NextRequest, NextResponse } from 'next/server';
+import dbConnect from '@/lib/db';
 import BlogPost from '@/lib/models/BlogPost';
 import { getAuthUser } from '@/lib/auth';
 
 export async function GET(request: NextRequest) {
   try {
+    await dbConnect();
     const { searchParams } = new URL(request.url);
     const category = searchParams.get('category');
     const featured = searchParams.get('featured');
     const slug = searchParams.get('slug');
-    const isAdminView = searchParams.get('admin') === 'true';
+
+    // Check if user is admin
+    const user = await getAuthUser();
+    const isAdmin = user && user.role === 'admin';
 
     if (slug) {
-      const post = await BlogPost.findOne({ slug });
+      // For single post, non-admins can only see published posts
+      const query: any = { slug };
+      if (!isAdmin) {
+        query.published = true;
+      }
+      const post = await BlogPost.findOne(query);
       if (!post) return NextResponse.json({ error: 'Post not found' }, { status: 404 });
       return NextResponse.json(post);
     }
 
     const filter: any = {};
 
-    // For non-admin view, only show published posts
-    if (!isAdminView) {
-      const user = await getAuthUser();
-      if (!user || user.role !== 'admin') {
-        filter.published = true;
-      }
+    // Non-admins can only see published posts
+    if (!isAdmin) {
+      filter.published = true;
     }
 
     if (category) filter.category = category;
     if (featured === 'true') filter.featured = true;
 
     const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '10');
+    const limit = Math.min(parseInt(searchParams.get('limit') || '10'), 100); // Cap at 100
     const skip = (page - 1) * limit;
 
     const total = await BlogPost.countDocuments(filter);
@@ -80,6 +87,7 @@ async function ensureUniqueSlug(slug: string, model: any, currentId?: string) {
 
 export async function POST(request: NextRequest) {
   try {
+    await dbConnect();
     const user = await getAuthUser();
     if (!user || user.role !== 'admin') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

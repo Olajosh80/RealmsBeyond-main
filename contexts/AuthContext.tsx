@@ -33,13 +33,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 store.setUser(data.user);
                 store.setProfile(data.profile);
             } else if (response.status === 401) {
-                // Access token missing or expired, try to refresh
-                console.log('[AuthContext] Access token expired, attempting refresh...');
                 const refreshResponse = await fetch('/api/auth/refresh', { method: 'POST' });
 
                 if (refreshResponse.ok) {
-                    console.log('[AuthContext] Refresh successful, retrying auth check...');
-                    // Retry fetching auth status
                     const retryResponse = await fetch('/api/auth/me');
                     if (retryResponse.ok) {
                         const data = await retryResponse.json();
@@ -49,14 +45,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                         store.clearAuth();
                     }
                 } else {
-                    console.log('[AuthContext] Refresh failed, clearing auth.');
                     store.clearAuth();
                 }
             } else {
                 store.clearAuth();
             }
-        } catch (err) {
-            console.error('[AuthContext] Error fetching auth status:', err);
+        } catch {
             store.clearAuth();
         }
     };
@@ -72,8 +66,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 store.setIsLoading(true);
                 await fetchAuthStatus();
                 setHasInitialized(true);
-            } catch (err: any) {
-                console.error('[AuthContext] Error during initialization:', err);
+            } catch {
                 setHasInitialized(true);
             } finally {
                 store.setIsLoading(false);
@@ -87,8 +80,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         try {
             await fetch('/api/auth/signout', { method: 'POST' });
             store.clearAuth();
-        } catch (err) {
-            console.error('[AuthContext] Error signing out:', err);
+        } catch {
+            store.clearAuth();
         }
     };
 
@@ -96,8 +89,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         try {
             store.setIsLoading(true);
             await fetchAuthStatus();
-        } catch (err) {
-            console.error('[AuthContext] Error refreshing auth:', err);
         } finally {
             store.setIsLoading(false);
         }

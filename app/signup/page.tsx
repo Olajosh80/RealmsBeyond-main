@@ -44,7 +44,6 @@ export default function SignUpPage() {
     setError('');
 
     try {
-      console.log('[Sign Up] Sending signup request to API...');
       const response = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: {
@@ -64,13 +63,11 @@ export default function SignUpPage() {
         throw new Error(result.error || 'Failed to create account');
       }
 
-      console.log('[Sign Up] Account created successfully:', result.user?.id);
       setSuccess(true);
       setTimeout(() => {
         router.push('/verify-email');
       }, 2000);
     } catch (err: any) {
-      console.error('[Sign Up] Error:', err);
       setError(err.message || 'An error occurred during sign up');
     } finally {
       setLoading(false);

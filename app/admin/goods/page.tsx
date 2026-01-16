@@ -23,7 +23,7 @@ export default function GoodsPage() {
         throw new Error(data.error || 'Failed to fetch products');
       }
       const data = await response.json();
-      setGoods(data || []);
+      setGoods(data.products || []);
     } catch (err: any) {
       console.error('Error fetching products:', err);
       setError(err.message || 'Failed to load products. Please try again.');

@@ -65,7 +65,6 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
             }, 1000);
 
         } catch (err: any) {
-            console.error('[LoginModal] Error:', err);
             setError(err.message || 'An error occurred');
         } finally {
             setLoading(false);

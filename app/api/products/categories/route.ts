@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/db';
 import Category from '@/lib/models/Category';
 import slugify from 'slugify';
-// Force rebuild
+import { getAuthUser } from '@/lib/auth';
 
 export async function GET(request: NextRequest) {
     try {
@@ -17,11 +17,20 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
     try {
+        const user = await getAuthUser();
+        if (!user || user.role !== 'admin') {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
         await dbConnect();
         const { name, parent, description } = await request.json();
 
-        if (!name) {
+        if (!name || typeof name !== 'string' || name.trim().length === 0) {
             return NextResponse.json({ error: 'Name is required' }, { status: 400 });
+        }
+
+        if (name.length > 100) {
+            return NextResponse.json({ error: 'Name must be less than 100 characters' }, { status: 400 });
         }
 
         const slug = slugify(name, { lower: true, strict: true });
@@ -48,6 +57,11 @@ export async function POST(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
     try {
+        const user = await getAuthUser();
+        if (!user || user.role !== 'admin') {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
         await dbConnect();
         const { searchParams } = new URL(request.url);
         const id = searchParams.get('id');

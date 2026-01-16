@@ -1,7 +1,14 @@
 import { SignJWT, jwtVerify } from 'jose';
 
-const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback-secret-for-dev-only');
-const REFRESH_TOKEN_SECRET = new TextEncoder().encode(process.env.REFRESH_TOKEN_SECRET || 'fallback-refresh-secret-for-dev-only');
+if (!process.env.JWT_SECRET) {
+    throw new Error('JWT_SECRET environment variable is required');
+}
+if (!process.env.REFRESH_TOKEN_SECRET) {
+    throw new Error('REFRESH_TOKEN_SECRET environment variable is required');
+}
+
+const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET);
+const REFRESH_TOKEN_SECRET = new TextEncoder().encode(process.env.REFRESH_TOKEN_SECRET);
 
 export interface JWTPayload {
     userId: string;

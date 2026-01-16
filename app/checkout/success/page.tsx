@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { Button } from '@/components/ui/Button';
@@ -9,15 +9,6 @@ import { MdCheckCircle, MdLocalShipping, MdMail, MdDownload, MdArrowForward } fr
 
 export default function CheckoutSuccessPage() {
   const [orderNumber] = useState(`ORD-${Date.now().toString().slice(-8)}`);
-
-  useEffect(() => {
-    // Confetti effect (optional)
-    const timer = setTimeout(() => {
-      console.log('Order confirmed!');
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, []);
 
   return (
     <>

@@ -53,7 +53,6 @@ function SignInForm() {
     setError('');
 
     try {
-      console.log('[Sign In] Calling sign-in API...');
       const response = await fetch('/api/auth/signin', {
         method: 'POST',
         headers: {
@@ -72,17 +71,11 @@ function SignInForm() {
         throw new Error(result.error || 'Sign in failed');
       }
 
-      console.log('[Sign In] API Sign in successful');
-
       useAuthStore.getState().setUser(result.user);
       useAuthStore.getState().setProfile(result.user);
 
       refreshAuth();
-
-      // The redirect will happen automatically via the useEffect
-      // because 'user' state is now populated immediately
     } catch (err: any) {
-      console.error('[Sign In] Error:', err);
       setError(err.message || 'An error occurred during sign in');
     } finally {
       setLoading(false);
@@ -124,9 +117,6 @@ function SignInForm() {
     const password = searchParams.get('password');
 
     if (email && password) {
-      console.log('[Sign In] Query params detected, populating form for:', email);
-      // Decode URL-encoded values and populate the form
-      // User will click the sign-in button to trigger the API call
       setForm(prev => ({
         ...prev,
         email: decodeURIComponent(email),

@@ -66,8 +66,8 @@ export const UserMenu: React.FC<UserMenuProps> = ({
       onClose();
       router.push('/');
       router.refresh();
-    } catch (error) {
-      console.error('Error signing out:', error);
+    } catch {
+      // Silent fail - user will see they're still logged in
     }
   };
 

@@ -24,7 +24,7 @@ export default function AdminDashboard() {
 
               <div className="mt-8 flex gap-4">
                 {/* Primary Button */}
-                <button className="px-6 py-3 bg-rare-primary text-grey rounded-xl font-bold text-sm shadow-lg shadow-rare-primary/20 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
+                <button className="px-6 py-3 bg-rare-primary text-white rounded-xl font-bold text-sm shadow-lg shadow-rare-primary/20 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
                   View Orders
                 </button>
                 {/* Secondary Button */}
@@ -57,18 +57,6 @@ export default function AdminDashboard() {
             {/* Right Column - Stock Status & Extras */}
             <div className="space-y-8">
               <StockStatus />
-              
-              {/* Pro Tip Section - Kept this one solid dark for contrast against the light dashboard */}
-              <div className="bg-rare-primary p-6 rounded-2xl text-white shadow-xl relative overflow-hidden group">
-                <div className="relative z-10">
-                  <h3 className="font-heading font-bold text-xl mb-2">Pro Tip</h3>
-                  <p className="text-white/80 text-sm mb-4">You can now manage customer reviews directly from the dashboard.</p>
-                  <button className="bg-white text-rare-primary px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-white/90 transition-colors">
-                    Try it out
-                  </button>
-                </div>
-                <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700" />
-              </div>
             </div>
           </div>
         </div>

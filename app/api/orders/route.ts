@@ -3,8 +3,9 @@ import mongoose from 'mongoose';
 import dbConnect from '@/lib/db';
 import Order from '@/lib/models/Order';
 import OrderItem from '@/lib/models/OrderItem';
+import Product from '@/lib/models/Product';
 import { getAuthUser } from '@/lib/auth';
-import { validateOrderData } from '@/lib/validation';
+import { validateShippingInfo } from '@/lib/validation';
 import { initializeTransaction } from '@/lib/paystack';
 
 export async function GET(request: NextRequest) {
@@ -57,32 +58,106 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { items, shipping, total } = body;
+    const { items, shipping } = body;
+
+    // Validate shipping info
+    if (!shipping) {
+      await session.abortTransaction();
+      session.endSession();
+      return NextResponse.json({ error: 'Shipping information is required' }, { status: 400 });
+    }
+
+    const shippingValidation = validateShippingInfo(shipping);
+    if (!shippingValidation.valid) {
+      await session.abortTransaction();
+      session.endSession();
+      return NextResponse.json({ error: shippingValidation.errors.join('; ') }, { status: 400 });
+    }
+
+    // Validate items
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      await session.abortTransaction();
+      session.endSession();
+      return NextResponse.json({ error: 'Order must have at least one item' }, { status: 400 });
+    }
+
+    if (items.length > 100) {
+      await session.abortTransaction();
+      session.endSession();
+      return NextResponse.json({ error: 'Too many items in order' }, { status: 400 });
+    }
+
+    // Fetch product prices from database to prevent price manipulation
+    const productIds = items.map((item: any) => item.id);
+    const products = await Product.find({ _id: { $in: productIds }, in_stock: true }).lean();
+
+    if (products.length !== items.length) {
+      await session.abortTransaction();
+      session.endSession();
+      return NextResponse.json({ error: 'Some products are unavailable or out of stock' }, { status: 400 });
+    }
+
+    // Create a map for quick price lookup
+    const productMap = new Map(products.map(p => [p._id.toString(), p]));
+
+    // Calculate server-side total and validate quantities
+    let calculatedTotal = 0;
+    const validatedItems: any[] = [];
+
+    for (const item of items) {
+      const product = productMap.get(item.id);
+      if (!product) {
+        await session.abortTransaction();
+        session.endSession();
+        return NextResponse.json({ error: `Product ${item.id} not found` }, { status: 400 });
+      }
+
+      const quantity = parseInt(item.quantity, 10);
+      if (isNaN(quantity) || quantity < 1 || quantity > 100) {
+        await session.abortTransaction();
+        session.endSession();
+        return NextResponse.json({ error: 'Invalid quantity for one or more items' }, { status: 400 });
+      }
+
+      const itemSubtotal = product.price * quantity;
+      calculatedTotal += itemSubtotal;
+
+      validatedItems.push({
+        order_id: null, // Will be set after order creation
+        product_id: product._id,
+        product_name: product.name,
+        product_price: product.price,
+        quantity: quantity,
+        subtotal: itemSubtotal,
+      });
+    }
+
+    // Add shipping cost (fixed rate)
+    const shippingCost = 15000; // Naira
+    calculatedTotal += shippingCost;
+
+    // Sanity check on total
+    if (calculatedTotal <= 0 || calculatedTotal > 100000000) {
+      await session.abortTransaction();
+      session.endSession();
+      return NextResponse.json({ error: 'Invalid order total' }, { status: 400 });
+    }
 
     // Create order within transaction
     const [order] = await Order.create([{
       user_id: user.userId,
-      customer_name: shipping.fullName,
-      customer_email: shipping.email,
-      customer_phone: shipping.phone,
+      customer_name: shipping.fullName.trim(),
+      customer_email: shipping.email.toLowerCase().trim(),
+      customer_phone: shipping.phone.trim(),
       shipping_address: `${shipping.address}, ${shipping.city}, ${shipping.state} ${shipping.zipCode}, ${shipping.country}`,
-      total_amount: total,
+      total_amount: calculatedTotal,
       status: 'pending',
       payment_status: 'pending',
     }], { session });
 
-    // Create order items within transaction
-    if (items && items.length > 0) {
-      const orderItems = items.map((item: any) => ({
-        order_id: order._id,
-        product_id: item.id,
-        product_name: item.name,
-        product_price: item.price,
-        quantity: item.quantity,
-        subtotal: item.price * item.quantity,
-      }));
-      await OrderItem.insertMany(orderItems, { session });
-    }
+    // Update order items with order ID and insert
+    validatedItems.forEach(item => { item.order_id = order._id; });
+    await OrderItem.insertMany(validatedItems, { session });
 
     await session.commitTransaction();
     session.endSession();
@@ -90,8 +165,8 @@ export async function POST(request: NextRequest) {
     // Initialize Paystack payment
     try {
       const paystackResponse = await initializeTransaction(
-        shipping.email,
-        total,
+        shipping.email.toLowerCase().trim(),
+        calculatedTotal,
         { order_id: order._id.toString() }
       );
 

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/db';
 import Division from '@/lib/models/Division';
 import { getAuthUser } from '@/lib/auth';
+import { validateDivision } from '@/lib/validation';
 
 export async function GET() {
   try {
@@ -24,9 +25,24 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
 
-    const division = await Division.create(body);
+    // Validate input
+    const validation = validateDivision(body);
+    if (!validation.valid) {
+      return NextResponse.json({ error: validation.errors.join('; ') }, { status: 400 });
+    }
+
+    const division = await Division.create({
+      name: body.name.trim(),
+      slug: body.slug.trim().toLowerCase(),
+      description: body.description?.trim() || undefined,
+      order: body.order || 0,
+    });
+
     return NextResponse.json(division, { status: 201 });
   } catch (error: any) {
+    if (error.code === 11000) {
+      return NextResponse.json({ error: 'Division with this slug already exists' }, { status: 409 });
+    }
     console.error('[Divisions API] POST Error:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }

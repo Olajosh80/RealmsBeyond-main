@@ -2,6 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/db';
 import Product from '@/lib/models/Product';
 import Division from '@/lib/models/Division';
+import { getAuthUser } from '@/lib/auth';
+
+// Escape special regex characters to prevent ReDoS attacks
+function escapeRegex(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -50,15 +56,16 @@ export async function GET(request: NextRequest) {
     if (category) filter.category = category;
 
     if (search) {
+      const escapedSearch = escapeRegex(search);
       filter.$or = [
-        { name: { $regex: search, $options: 'i' } },
-        { description: { $regex: search, $options: 'i' } },
-        { category: { $regex: search, $options: 'i' } },
+        { name: { $regex: escapedSearch, $options: 'i' } },
+        { description: { $regex: escapedSearch, $options: 'i' } },
+        { category: { $regex: escapedSearch, $options: 'i' } },
       ];
     }
 
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '12');
+    const page = Math.max(1, parseInt(searchParams.get('page') || '1'));
+    const limit = Math.min(Math.max(1, parseInt(searchParams.get('limit') || '12')), 100); // Cap at 100
     const skip = (page - 1) * limit;
 
     const total = await Product.countDocuments(filter);
@@ -85,8 +92,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
-
-import { getAuthUser } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
   try {
