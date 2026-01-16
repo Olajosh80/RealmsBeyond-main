@@ -7,6 +7,7 @@ import Product from '@/lib/models/Product';
 import { getAuthUser } from '@/lib/auth';
 import { validateShippingInfo } from '@/lib/validation';
 import { initializeTransaction } from '@/lib/paystack';
+import { getShippingFee, calculateOrderWeights } from '@/lib/shipping';
 
 export async function GET(request: NextRequest) {
   try {
@@ -19,7 +20,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
 
-    const filter: any = {};
+    const filter: Record<string, any> = {};
     // If not admin, restrict to own orders
     if (user.role !== 'admin') {
       filter.user_id = user.userId;
@@ -39,7 +40,7 @@ export async function GET(request: NextRequest) {
     });
 
     return NextResponse.json(ordersWithItems);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('[Orders API] GET Error:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
@@ -88,7 +89,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Fetch product prices from database to prevent price manipulation
-    const productIds = items.map((item: any) => item.id);
+    const productIds = items.map((item: { id: string }) => item.id);
     const products = await Product.find({ _id: { $in: productIds }, in_stock: true }).lean();
 
     if (products.length !== items.length) {
@@ -102,7 +103,16 @@ export async function POST(request: NextRequest) {
 
     // Calculate server-side total and validate quantities
     let calculatedTotal = 0;
-    const validatedItems: any[] = [];
+    const validatedItems: {
+      order_id: mongoose.Types.ObjectId | null;
+      product_id: mongoose.Types.ObjectId;
+      product_name: string;
+      product_price: number;
+      quantity: number;
+      subtotal: number;
+      weight?: string;
+      dimensions?: string;
+    }[] = [];
 
     for (const item of items) {
       const product = productMap.get(item.id);
@@ -129,11 +139,14 @@ export async function POST(request: NextRequest) {
         product_price: product.price,
         quantity: quantity,
         subtotal: itemSubtotal,
+        weight: product.weight,
+        dimensions: product.dimensions,
       });
     }
 
-    // Add shipping cost (fixed rate)
-    const shippingCost = 15000; // Naira
+    // Add shipping cost based on location and weight
+    const { totalActualWeight, totalVolumetricWeight } = calculateOrderWeights(validatedItems);
+    const shippingCost = getShippingFee(shipping.country, shipping.state, shipping.city, totalActualWeight, totalVolumetricWeight);
     calculatedTotal += shippingCost;
 
     // Sanity check on total
@@ -175,14 +188,14 @@ export async function POST(request: NextRequest) {
         payment_url: paystackResponse.data.authorization_url,
         reference: paystackResponse.data.reference
       }, { status: 201 });
-    } catch (paystackError: any) {
+    } catch (paystackError: unknown) {
       console.error('Paystack Initialization Error:', paystackError);
       return NextResponse.json({
         order,
         error: 'Order created but failed to initialize payment. Please try paying from your profile.'
       }, { status: 201 });
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (session.inTransaction()) {
       await session.abortTransaction();
     }

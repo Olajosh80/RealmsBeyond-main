@@ -39,7 +39,7 @@ export function AdminHeader() {
           <span className="text-xl font-heading font-bold tracking-wide text-gray-900">Admin</span>
         </Link>
 
-        {/* Navigation Bar - Optional for Desktop if sidebar is enough, but user asked for navbar fixes */}
+
         <nav className="hidden lg:flex items-center gap-1 bg-gray-50 p-1 rounded-xl border border-gray-200">
           {menuItems.slice(0, 3).map((item) => {
             const isActive = pathname === item.href;

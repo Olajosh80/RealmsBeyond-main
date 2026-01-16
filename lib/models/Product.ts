@@ -29,7 +29,7 @@ const ProductSchema: Schema = new Schema(
     in_stock: { type: Boolean, default: true, index: true },
     stock_quantity: { type: Number },
     // Shipping
-    weight: { type: String },
+    weight: { type: String, required: true },
     dimensions: { type: String },
     // Media & Org
     images: { type: [String], default: [] },

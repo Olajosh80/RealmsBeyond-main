@@ -3,12 +3,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { FiMenu, FiX, FiSearch, FiShoppingCart, FiUser } from 'react-icons/fi';
+import { FiMenu, FiX, FiSearch, FiShoppingCart } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { UserMenu } from '@/components/ui/UserMenu';
-import { UserProfile } from '@/lib/stores/authStore';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
 
@@ -68,7 +67,7 @@ export const Header: React.FC = () => {
         const response = await fetch(`/api/products?search=${encodeURIComponent(debouncedSearchQuery)}&limit=5`);
         if (response.ok) {
           const data = await response.json();
-          // Handle both paginated and non-paginated responses just in case, though API is paginated now
+          // Handle both paginated and non-paginated responses
           setSearchResults(data.products || data);
         }
       } catch (error) {
@@ -90,12 +89,6 @@ export const Header: React.FC = () => {
       setSearchQuery('');
       setSearchResults([]);
     }
-  };
-
-  const handleCloseSearch = () => {
-    setIsSearchOpen(false);
-    setSearchQuery('');
-    setSearchResults([]);
   };
 
   // Handle scroll effect
@@ -219,21 +212,25 @@ export const Header: React.FC = () => {
                   <button
                     ref={profileButtonRef}
                     onClick={() => setProfileMenuOpen(!profileMenuOpen)}
-                    className="p-2 hover:bg-rare-primary-light rounded-lg transition-colors relative"
+                    className="p-2 hover:bg-rare-primary-light/10 rounded-lg transition-colors relative"
                     aria-label="User menu"
                   >
                     {userProfile?.avatar_url ? (
                       <img
                         src={userProfile.avatar_url}
                         alt={userProfile.full_name || user?.user_metadata?.full_name || user.email || 'User'}
-                        className={`h-8 w-8 rounded-full object-cover border-2 ${isScrolled ? 'border-white' : 'border-rare-primary'
+                        className={`h-8 w-8 rounded-full object-cover border-2 ${isScrolled
+                          ? 'border-white'
+                          : 'border-rare-primary'
                           }`}
                       />
                     ) : (
                       <div
-                        className={`h-8 w-8 rounded-full flex items-center justify-center font-body font-semibold text-xs border transition-colors ${isScrolled
+                        className={`h-8 w-8 rounded-full flex items-center justify-center font-body font-semibold text-xs border-2 transition-colors ${isScrolled
+                          // Scrolled: White background, Dark text (High Contrast on Blue header)
                           ? 'bg-white text-rare-primary border-transparent'
-                          : 'bg-rare-primary text-white border-rare-primary'
+                          // Unscrolled: Transparent background, Dark text, Dark Border (Matches Search/Cart icons)
+                          : 'bg-transparent text-rare-primary border-rare-primary'
                           }`}
                       >
                         {(userProfile?.full_name || user?.user_metadata?.full_name)

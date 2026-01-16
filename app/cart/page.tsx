@@ -13,7 +13,7 @@ export default function CartPage() {
     const { items, removeItem, updateQuantity, getTotalPrice, getTotalItems, clearCart } = useCart();
 
     const subtotal = getTotalPrice();
-    const tax = subtotal * 0.08; // 8% tax estimate
+    const tax = subtotal * 0.075; // 7.5% tax estimate
     const total = subtotal + tax;
 
     return (
@@ -160,7 +160,7 @@ export default function CartPage() {
                                             <span className="font-semibold">₦{subtotal.toLocaleString()}</span>
                                         </div>
                                         <div className="flex justify-between text-rare-text">
-                                            <span className="font-body">Estimated Tax (8%)</span>
+                                            <span className="font-body">Estimated Tax (7.5%)</span>
                                             <span className="font-semibold">₦{tax.toLocaleString()}</span>
                                         </div>
                                         <div className="border-t border-rare-border pt-4">

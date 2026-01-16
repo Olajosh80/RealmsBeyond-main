@@ -87,7 +87,7 @@ export function ProductEditor({ productId }: { productId: string | null }) {
                     if (prodRes.ok) {
                         const data = await prodRes.json();
                         if (data.products && Array.isArray(data.products)) {
-                            dbProduct = data.products.find((p: any) => p._id === productId);
+                            dbProduct = data.products.find((p: Product) => p._id === productId);
                         } else if (data._id) {
                             dbProduct = data;
                         }
@@ -352,8 +352,12 @@ export function ProductEditor({ productId }: { productId: string | null }) {
 
     // Save Product
     const handleSave = async () => {
-        if (!product.name || !product.price) {
-            showMessage('Validation Error', 'Name and Price are required.', 'error');
+        if (!product.name || !product.price || !product.weight) {
+            const missing = [];
+            if (!product.name) missing.push('Name');
+            if (!product.price) missing.push('Price');
+            if (!product.weight) missing.push('Weight');
+            showMessage('Validation Error', `${missing.join(', ')} ${missing.length > 1 ? 'are' : 'is'} required.`, 'error');
             return;
         }
 
@@ -440,8 +444,8 @@ export function ProductEditor({ productId }: { productId: string | null }) {
                     <button
                         onClick={handleSave}
                         disabled={loading || uploading}
-                        className="flex items-center gap-2 px-6 py-2 bg-rare-primary text-white rounded-lg font-bold shadow-lg shadow-rare-primary/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
+                        className="flex items-center gap-2 px-6 py-2 bg-rare-primary text-grey rounded-lg font-bold shadow-lg shadow-rare-primary/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    >  
                         {loading ? <FiLoader className="animate-spin" /> : <FiSave />}
                         {productId ? 'Update' : 'Publish'}
                     </button>
@@ -574,13 +578,15 @@ export function ProductEditor({ productId }: { productId: string | null }) {
                                 {activeTab === 'shipping' && (
                                     <div className="space-y-4 max-w-sm">
                                         <label className="block">
-                                            <span className="text-sm font-medium text-gray-700">Weight (kg)</span>
+                                            <span className="text-sm font-medium text-gray-700">Weight (kg) <span className="text-red-500">*</span></span>
                                             <input
                                                 type="text"
                                                 name="weight"
                                                 value={product.weight || ''}
                                                 onChange={handleInputChange}
                                                 className="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 text-gray-900 shadow-sm focus:border-rare-primary focus:ring focus:ring-rare-primary/20 sm:text-sm p-2 border"
+                                                placeholder="e.g. 0.5"
+                                                required
                                             />
                                         </label>
                                         <label className="block">
@@ -837,7 +843,7 @@ export function ProductEditor({ productId }: { productId: string | null }) {
                         <div className="flex justify-center pt-2">
                             <button
                                 onClick={closeMessage}
-                                className="w-full px-4 py-2 text-sm font-bold text-white bg-rare-primary hover:bg-rare-primary/90 shadow-lg shadow-rare-primary/20 rounded-lg transition-all active:scale-95"
+                                className="w-full px-4 py-2 text-sm font-bold text-grey bg-rare-primary hover:bg-rare-primary/90 shadow-lg shadow-rare-primary/20 rounded-lg transition-all active:scale-95"
                             >
                                 Okay
                             </button>

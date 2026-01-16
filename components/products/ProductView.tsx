@@ -22,6 +22,8 @@ interface Product {
     reviews?: number;
     sku?: string;
     slug?: string;
+    weight?: string;
+    dimensions?: string;
     features?: string[];
 }
 
@@ -181,6 +183,8 @@ export default function ProductView({ product }: { product: Product }) {
                                                 price: product.price,
                                                 image: product.images?.[0],
                                                 slug: product.slug,
+                                                weight: product.weight,
+                                                dimensions: product.dimensions,
                                             });
                                         }}
                                         className="relative z-30"

@@ -24,7 +24,7 @@ export default function AdminDashboard() {
 
               <div className="mt-8 flex gap-4">
                 {/* Primary Button */}
-                <button className="px-6 py-3 bg-rare-primary text-white rounded-xl font-bold text-sm shadow-lg shadow-rare-primary/20 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
+                <button className="px-6 py-3 bg-rare-primary text-grey rounded-xl font-bold text-sm shadow-lg shadow-rare-primary/20 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
                   View Orders
                 </button>
                 {/* Secondary Button */}

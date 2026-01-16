@@ -82,6 +82,8 @@ export default async function ProductDetailPage({
     reviews: 0,
     sku: productDoc.sku || '',
     slug: productDoc.slug,
+    weight: productDoc.weight || '',
+    dimensions: productDoc.dimensions || '',
     features: productDoc.features || [],
   };
 

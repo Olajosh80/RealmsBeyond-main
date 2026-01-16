@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { Button } from '@/components/ui/Button';
@@ -11,6 +12,7 @@ import { MdShoppingCart, MdCreditCard, MdLocationOn, MdPerson, MdMail, MdPhone, 
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { NIGERIAN_STATES, getShippingFee, calculateOrderWeights } from '@/lib/shipping';
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -43,7 +45,7 @@ export default function CheckoutPage() {
     city: '',
     state: '',
     zipCode: '',
-    country: 'United States',
+    country: 'Nigeria',
   });
 
   const [paymentInfo, setPaymentInfo] = useState({
@@ -51,7 +53,8 @@ export default function CheckoutPage() {
   });
 
   const subtotal = getTotalPrice();
-  const shipping = subtotal > 0 ? 15000 : 0; // Updated shipping cost for Naira context? Or just keep it flat. Let's assume 15.00 becomes 1500 for now or similar. User said "remove free shipping", implying there IS shipping cost? Or remove the "Free Shipping" badge? "remove thefree shipping , 30 ndays return and tax from check out". This likely means remove the *badges* that claim free shipping. The calculation line `const shipping = subtotal > 0 ? 15.00 : 0;` implies shipping IS charged. I will modify the currency in the display.
+  const { totalActualWeight, totalVolumetricWeight } = calculateOrderWeights(cartItems);
+  const shipping = subtotal > 0 ? getShippingFee(shippingInfo.country, shippingInfo.state, shippingInfo.city, totalActualWeight, totalVolumetricWeight) : 0;
   const tax = 0; // Tax removed
   const total = subtotal + shipping;
 
@@ -97,9 +100,9 @@ export default function CheckoutPage() {
         setError('Order created but payment initialization failed.');
         setLoading(false);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Checkout error:', err);
-      setError(err?.message || 'Checkout failed');
+      setError(err instanceof Error ? err.message : 'Checkout failed');
       setLoading(false);
     }
   };
@@ -112,9 +115,9 @@ export default function CheckoutPage() {
         <div className="container mx-auto px-4 max-w-7xl">
           {/* Breadcrumb */}
           <div className="mb-8 flex items-center gap-2 text-sm text-rare-text-light">
-            <a href="/" className="hover:text-rare-primary">Home</a>
+            <Link href="/" className="hover:text-rare-primary">Home</Link>
             <span>/</span>
-            <a href="/products" className="hover:text-rare-primary">Products</a>
+            <Link href="/products" className="hover:text-rare-primary">Products</Link>
             <span>/</span>
             <span className="text-rare-primary">Checkout</span>
           </div>
@@ -133,7 +136,7 @@ export default function CheckoutPage() {
           {/* Empty Cart Warning */}
           {cartItems.length === 0 && (
             <div className="mb-6 p-6 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg text-center">
-              <p className="text-yellow-700 dark:text-yellow-400">Your cart is empty. <a href="/products" className="underline font-semibold">Continue shopping</a></p>
+              <p className="text-yellow-700 dark:text-yellow-400">Your cart is empty. <Link href="/products" className="underline font-semibold">Continue shopping</Link></p>
             </div>
           )}
 
@@ -249,14 +252,30 @@ export default function CheckoutPage() {
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-rare-text mb-2">State *</label>
-                        <Input
-                          type="text"
-                          placeholder="NY"
-                          value={shippingInfo.state}
-                          onChange={(e) => setShippingInfo({ ...shippingInfo, state: e.target.value })}
-                          required
-                          fullWidth
-                        />
+                        {shippingInfo.country === 'Nigeria' ? (
+                          <select
+                            className="w-full px-4 py-3 border border-rare-border rounded-lg font-body text-rare-text focus:outline-none focus:ring-2 focus:ring-rare-primary"
+                            value={shippingInfo.state}
+                            onChange={(e) => setShippingInfo({ ...shippingInfo, state: e.target.value })}
+                            required
+                          >
+                            <option value="">Select State</option>
+                            {NIGERIAN_STATES.map((state) => (
+                              <option key={state.name} value={state.name}>
+                                {state.name}
+                              </option>
+                            ))}
+                          </select>
+                        ) : (
+                          <Input
+                            type="text"
+                            placeholder="State/Province"
+                            value={shippingInfo.state}
+                            onChange={(e) => setShippingInfo({ ...shippingInfo, state: e.target.value })}
+                            required
+                            fullWidth
+                          />
+                        )}
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-rare-text mb-2">ZIP Code *</label>
@@ -279,8 +298,8 @@ export default function CheckoutPage() {
                         onChange={(e) => setShippingInfo({ ...shippingInfo, country: e.target.value })}
                         required
                       >
-                        <option>United States</option>
                         <option>Nigeria</option>
+                        <option>United States</option>
                         <option>Canada</option>
                         <option>United Kingdom</option>
                         <option>Australia</option>

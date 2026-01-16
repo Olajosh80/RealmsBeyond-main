@@ -203,8 +203,12 @@ export const validateProduct = (data: any) => {
     }
   }
 
-  if (data.category && typeof data.category !== 'string') {
-    errors.push('Category must be text');
+  if (!data.category || typeof data.category !== 'string') {
+    errors.push('Category is required');
+  }
+
+  if (!data.weight || (typeof data.weight === 'string' && data.weight.trim().length === 0)) {
+    errors.push('Product weight is required');
   }
 
   if (typeof data.in_stock !== 'boolean') {
